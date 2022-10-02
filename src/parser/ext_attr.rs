@@ -29,6 +29,7 @@ fn parse_single_ext_attr(input: &str) -> IResult<&str, ExtendedAttribute> {
         delimited(multispace0, tag("="), multispace0),
         ExtAttrValue::parse,
     ))(input)?;
+
     Ok((
         input,
         ExtendedAttribute {
@@ -46,6 +47,7 @@ impl Parser<ExtAttrValue> for ExtAttrValue {
             parse_ext_attr_ident_list,
             parse_ext_attr_wildcard,
         ))(input)?;
+
         Ok((input, value))
     }
 }
@@ -60,11 +62,12 @@ fn parse_ext_attr_named_arg_list(input: &str) -> IResult<&str, ExtAttrValue> {
         ),
         preceded(multispace0, tag(")")),
     )(input)?;
+
     Ok((
         input,
         ExtAttrValue::NamedArgumentList(crate::NamedArgumentList {
             identifier: identifier.to_string(),
-            arguments: vec![],
+            arguments,
         }),
     ))
 }
@@ -83,6 +86,7 @@ fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
         ),
         preceded(multispace0, tag(")")),
     )(input)?;
+
     Ok((
         input,
         ExtAttrValue::IdentifierList(identifiers.iter().map(|s| s.to_string()).collect()),

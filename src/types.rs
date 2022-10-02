@@ -13,15 +13,9 @@ pub enum Type {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Record {
-    pub key: RecordKey,
+    // Can only be "DOMString", "USVString" or "ByteString".
+    pub key: Box<Type>,
     pub value: Box<Type>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub enum RecordKey {
-    DOMString,
-    USVString,
-    ByteString,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

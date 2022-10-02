@@ -2,6 +2,7 @@ mod argument;
 mod ext_attr;
 mod interface;
 mod member;
+mod r#type;
 
 use nom::{
     branch::alt,
