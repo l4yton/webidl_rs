@@ -22,12 +22,13 @@ fn parse_union(input: &str) -> IResult<&str, Type> {
         separated_list1(delimited(multispace1, tag("or"), multispace1), Type::parse),
         tag(")"),
     )(input)?;
+    assert!(types.len() > 1, "Found union with only a single type");
 
     Ok((input, Type::Union(types)))
 }
 
 fn parse_standard_type(input: &str) -> IResult<&str, Type> {
-    let (input, primitive_types_with_spaces) = opt(alt((
+    let (input, primitive_type_with_space) = opt(alt((
         tag("unsigned short"),
         tag("unsigned long"),
         tag("long long"),
@@ -36,7 +37,7 @@ fn parse_standard_type(input: &str) -> IResult<&str, Type> {
         tag("unrestricted double"),
     )))(input)?;
 
-    if let Some(name) = primitive_types_with_spaces {
+    if let Some(name) = primitive_type_with_space {
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
         return Ok((
             input,

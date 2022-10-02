@@ -10,7 +10,8 @@ use crate::{parser, Argument, ExtendedAttribute, Parser, Type};
 
 impl Parser<Argument> for Argument {
     fn parse(input: &str) -> IResult<&str, Argument> {
-        let (input, ext_attrs) = ExtendedAttribute::parse(input)?;
+        let (input, ext_attrs) =
+            map(opt(ExtendedAttribute::parse), |o| o.unwrap_or(vec![]))(input)?;
         let (input, optional) = map(
             opt(delimited(multispace0, tag("optional"), multispace1)),
             |o| o.is_some(),
