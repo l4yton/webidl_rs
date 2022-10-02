@@ -27,8 +27,8 @@ pub enum Definition {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Interface {
-    pub partial: bool,
     pub ext_attrs: Vec<ExtendedAttribute>,
+    pub partial: bool,
     pub identifier: String,
     pub inheritance: Option<String>,
     pub members: Vec<Member>,
@@ -36,8 +36,8 @@ pub struct Interface {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InterfaceMixin {
-    pub partial: bool,
     pub ext_attrs: Vec<ExtendedAttribute>,
+    pub partial: bool,
     pub identifier: String,
     pub inheritance: Option<String>,
     pub members: Vec<Member>,
@@ -61,8 +61,8 @@ pub struct CallbackInterface {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Namespace {
-    pub partial: bool,
     pub ext_attrs: Vec<ExtendedAttribute>,
+    pub partial: bool,
     pub identifier: String,
     pub inheritance: Option<String>,
     pub members: Vec<Member>,

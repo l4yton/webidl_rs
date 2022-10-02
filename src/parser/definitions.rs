@@ -1,4 +1,5 @@
 use nom::{
+    branch::alt,
     bytes::complete::tag,
     character::complete::{multispace0, multispace1},
     combinator::{map, opt},
@@ -7,7 +8,17 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, ExtendedAttribute, Interface, Member, Parser};
+use crate::{parser, Definition, ExtendedAttribute, Interface, InterfaceMixin, Member, Parser};
+
+impl Parser<Definition> for Definition {
+    fn parse(input: &str) -> IResult<&str, Definition> {
+        alt((
+            map(Interface::parse, Definition::Interface),
+            map(InterfaceMixin::parse, Definition::InterfaceMixin),
+            // TODO
+        ))(input)
+    }
+}
 
 impl Parser<Interface> for Interface {
     fn parse(input: &str) -> IResult<&str, Interface> {
@@ -42,6 +53,22 @@ impl Parser<Interface> for Interface {
                 identifier: identifier.to_string(),
                 inheritance: inheritance.map(|s| s.to_string()),
                 members,
+            },
+        ))
+    }
+}
+
+impl Parser<InterfaceMixin> for InterfaceMixin {
+    fn parse(input: &str) -> IResult<&str, InterfaceMixin> {
+        // TODO
+        Ok((
+            input,
+            InterfaceMixin {
+                ext_attrs: vec![],
+                partial: false,
+                identifier: "a".to_string(),
+                inheritance: None,
+                members: vec![],
             },
         ))
     }
