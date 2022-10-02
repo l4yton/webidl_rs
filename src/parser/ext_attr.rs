@@ -12,23 +12,23 @@ use crate::{parser, Argument, ExtAttrValue, ExtendedAttribute, Parser};
 
 impl Parser<Vec<ExtendedAttribute>> for ExtendedAttribute {
     fn parse(input: &str) -> IResult<&str, Vec<ExtendedAttribute>> {
-        preceded(
-            multispace0,
-            delimited(
-                tag("["),
-                separated_list0(
-                    delimited(multispace0, tag(","), multispace0),
-                    parse_single_ext_attr,
-                ),
-                tag("]"),
+        delimited(
+            preceded(multispace0, tag("[")),
+            separated_list0(
+                delimited(multispace0, tag(","), multispace0),
+                parse_single_ext_attr,
             ),
+            preceded(multispace0, tag("]")),
         )(input)
     }
 }
 
 fn parse_single_ext_attr(input: &str) -> IResult<&str, ExtendedAttribute> {
     let (input, identifier) = parser::identifier(input)?;
-    let (input, value) = opt(preceded(tag("="), ExtAttrValue::parse))(input)?;
+    let (input, value) = opt(preceded(
+        delimited(multispace0, tag("="), multispace0),
+        ExtAttrValue::parse,
+    ))(input)?;
     Ok((
         input,
         ExtendedAttribute {
@@ -52,9 +52,13 @@ impl Parser<ExtAttrValue> for ExtAttrValue {
 
 fn parse_ext_attr_named_arg_list(input: &str) -> IResult<&str, ExtAttrValue> {
     let (input, identifier) = parser::identifier(input)?;
-    let (input, arguments) = separated_list0(
-        delimited(multispace0, tag(","), multispace0),
-        Argument::parse,
+    let (input, arguments) = delimited(
+        preceded(multispace0, tag("(")),
+        separated_list0(
+            delimited(multispace0, tag(","), multispace0),
+            Argument::parse,
+        ),
+        preceded(multispace0, tag(")")),
     )(input)?;
     Ok((
         input,
@@ -72,12 +76,12 @@ fn parse_ext_attr_ident(input: &str) -> IResult<&str, ExtAttrValue> {
 
 fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
     let (input, identifiers) = delimited(
-        tag("("),
+        preceded(multispace0, tag("(")),
         separated_list0(
             delimited(multispace0, tag(","), multispace0),
             parser::identifier,
         ),
-        tag(")"),
+        preceded(multispace0, tag(")")),
     )(input)?;
     Ok((
         input,

@@ -8,8 +8,8 @@ use nom::{
 
 use crate::{Argument, ExtendedAttribute, Parser};
 
-impl Parser<Argument> for Argument {
-    fn parse(input: &str) -> IResult<&str, Argument> {
+impl Parser<()> for Argument {
+    fn parse(input: &str) -> IResult<&str, ()> {
         let (input, ext_attrs) = ExtendedAttribute::parse(input)?;
         let (input, optional) = map(
             opt(delimited(multispace0, tag("optional"), multispace1)),
@@ -17,5 +17,6 @@ impl Parser<Argument> for Argument {
         )(input)?;
 
         // TODO
+        Ok((input, ()))
     }
 }

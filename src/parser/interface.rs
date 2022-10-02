@@ -20,16 +20,15 @@ impl Parser<Interface> for Interface {
             terminated(tag("interface"), multispace1),
             parser::identifier,
         )(input)?;
-        let (input, inheritance) = opt(delimited(
+        let (input, inheritance) = opt(preceded(
             delimited(multispace0, tag(":"), multispace0),
             parser::identifier,
-            multispace0,
         ))(input)?;
         let (input, members) = terminated(
             delimited(
-                tag("{"),
+                preceded(multispace0, tag("{")),
                 separated_list0(delimited(multispace0, tag(";"), multispace0), Member::parse),
-                tag("}"),
+                preceded(multispace0, tag("}")),
             ),
             tag(";"),
         )(input)?;
