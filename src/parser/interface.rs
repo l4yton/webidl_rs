@@ -12,7 +12,7 @@ use crate::{parser, ExtendedAttribute, Interface, Member, Parser};
 impl Parser<Interface> for Interface {
     fn parse(input: &str) -> IResult<&str, Interface> {
         let (input, ext_attrs) =
-            map(opt(ExtendedAttribute::parse), |o| o.unwrap_or(vec![]))(input)?;
+            map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, partial) = map(
             opt(delimited(multispace0, tag("partial"), multispace1)),
             |o| o.is_some(),

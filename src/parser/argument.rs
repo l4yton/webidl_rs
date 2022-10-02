@@ -6,12 +6,12 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, Argument, ExtendedAttribute, Parser, Type};
+use crate::{parser, Argument, DefaultValue, ExtendedAttribute, Parser, Type};
 
 impl Parser<Argument> for Argument {
     fn parse(input: &str) -> IResult<&str, Argument> {
         let (input, ext_attrs) =
-            map(opt(ExtendedAttribute::parse), |o| o.unwrap_or(vec![]))(input)?;
+            map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, optional) = map(
             opt(delimited(multispace0, tag("optional"), multispace1)),
             |o| o.is_some(),
@@ -19,7 +19,10 @@ impl Parser<Argument> for Argument {
         let (input, r#type) = preceded(multispace0, Type::parse)(input)?;
         let (input, variadic) = map(opt(tag("...")), |o| o.is_some())(input)?;
         let (input, identifier) = preceded(multispace1, parser::identifier)(input)?;
-        // TODO: DefaultValue
+        let (input, default) = opt(preceded(
+            delimited(multispace0, tag("="), multispace0),
+            DefaultValue::parse,
+        ))(input)?;
 
         Ok((
             input,
@@ -29,7 +32,7 @@ impl Parser<Argument> for Argument {
                 r#type,
                 variadic,
                 identifier: identifier.to_string(),
-                default: None,
+                default,
             },
         ))
     }
