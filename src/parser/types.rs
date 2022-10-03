@@ -31,9 +31,9 @@ fn parse_union(input: &str) -> IResult<&str, Type> {
 fn parse_standard_type(input: &str) -> IResult<&str, Type> {
     let (input, primitive_type_with_space) = opt(alt((
         tag("unsigned short"),
+        tag("unsigned long long"),
         tag("unsigned long"),
         tag("long long"),
-        tag("unsigned long long"),
         tag("unrestricted float"),
         tag("unrestricted double"),
     )))(input)?;

@@ -13,7 +13,6 @@ pub trait Parser<T> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(tag = "class")]
 pub enum Definition {
     Interface(Interface),
     InterfaceMixin(InterfaceMixin),
@@ -117,7 +116,6 @@ pub enum ExtAttrValue {
     Identifier(String),
     IdentifierList(Vec<String>),
 
-    #[serde(rename = "*")]
     Wildcard,
 }
 
@@ -146,7 +144,6 @@ pub enum DefaultValue {
 
     Null,
     Infinity,
-    #[serde(rename = "-Inifinity")]
     NegativeInfinity,
     NaN,
     Undefined,

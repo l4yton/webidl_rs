@@ -19,6 +19,7 @@ impl Parser<Definition> for Definition {
             InterfaceMixin::parse,
             Includes::parse,
             CallbackInterface::parse,
+            Namespace::parse,
         ))(input)
     }
 }

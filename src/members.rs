@@ -28,7 +28,6 @@ pub enum ConstValue {
     Integer(i64),
     Decimal(f64),
 
-    #[serde(rename = "-Infinity")]
     NegativeInfinity,
     Infinity,
     NaN,
@@ -44,7 +43,6 @@ pub struct Attribute {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
 pub enum AttrSpecial {
     Static,
     Stringifier,
@@ -61,7 +59,6 @@ pub struct Operation {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
 pub enum OpSpecial {
     Static,
     Getter,
