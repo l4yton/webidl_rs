@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-use crate::{Argument, DefaultValue, ExtendedAttribute, Parser, Type};
+use crate::{Argument, DefaultValue, DictionaryMember, ExtendedAttribute, Parser, Type};
 
 // As definined in: https://webidl.spec.whatwg.org/#idl-grammar
 pub(crate) fn identifier(input: &str) -> IResult<&str, &str> {
@@ -91,4 +91,48 @@ impl Parser<DefaultValue> for DefaultValue {
             map(tag("{}"), |_| DefaultValue::Dictionary),
         ))(input)
     }
+}
+
+impl Parser<Vec<DictionaryMember>> for DictionaryMember {
+    fn parse(input: &str) -> IResult<&str, Vec<DictionaryMember>> {
+        terminated(
+            delimited(
+                delimited(multispace0, tag("{"), multispace0),
+                terminated(
+                    separated_list0(
+                        delimited(multispace0, tag(";"), multispace0),
+                        parse_single_dictionary_member,
+                    ),
+                    preceded(multispace0, tag(";")),
+                ),
+                delimited(multispace0, tag("}"), multispace0),
+            ),
+            tag(";"),
+        )(input)
+    }
+}
+
+fn parse_single_dictionary_member(input: &str) -> IResult<&str, DictionaryMember> {
+    let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
+    let (input, required) = map(
+        opt(delimited(multispace0, tag("required"), multispace1)),
+        |o| o.is_some(),
+    )(input)?;
+    let (input, r#type) = preceded(multispace0, Type::parse)(input)?;
+    let (input, identifier) = preceded(multispace1, identifier)(input)?;
+    let (input, default) = opt(preceded(
+        delimited(multispace0, tag("="), multispace0),
+        DefaultValue::parse,
+    ))(input)?;
+
+    Ok((
+        input,
+        DictionaryMember {
+            ext_attrs,
+            required,
+            r#type,
+            identifier: identifier.to_string(),
+            default,
+        },
+    ))
 }

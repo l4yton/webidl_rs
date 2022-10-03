@@ -2,7 +2,7 @@ mod members;
 mod parser;
 mod types;
 
-use nom::IResult;
+use nom::{character::complete::multispace0, multi::separated_list0, IResult};
 use serde::{Deserialize, Serialize};
 
 pub use members::*;
@@ -68,7 +68,9 @@ pub struct Namespace {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Dictionary {
     pub ext_attrs: Vec<ExtendedAttribute>,
+    pub partial: bool,
     pub identifier: String,
+    pub inheritance: Option<String>,
     pub members: Vec<DictionaryMember>,
 }
 
