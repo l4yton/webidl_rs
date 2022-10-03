@@ -13,6 +13,7 @@ pub trait Parser<T> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "class")]
 pub enum Definition {
     Interface(Interface),
     InterfaceMixin(InterfaceMixin),
@@ -39,7 +40,6 @@ pub struct InterfaceMixin {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
     pub identifier: String,
-    pub inheritance: Option<String>,
     pub members: Vec<Member>,
 }
 
@@ -54,9 +54,7 @@ pub struct Includes {
 pub struct CallbackInterface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
-    // "Callback interfaces must define exactly one regular operation." -
-    // https://webidl.spec.whatwg.org/#idl-callback-interfaces
-    pub operation: Operation,
+    pub members: Vec<Member>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -114,8 +112,7 @@ pub struct ExtendedAttribute {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ExtAttrValue {
-    // NOTE: Deprecated. Ignore this?
-    //ArgumentList(Vec<Argument>),
+    ArgumentList(Vec<Argument>),
     NamedArgumentList(NamedArgumentList),
     Identifier(String),
     IdentifierList(Vec<String>),

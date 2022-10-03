@@ -4,7 +4,7 @@ use nom::{
     character::complete::{multispace0, multispace1},
     combinator::{map, opt},
     multi::separated_list1,
-    sequence::{delimited, separated_pair},
+    sequence::{delimited, preceded, separated_pair},
     IResult,
 };
 
@@ -18,10 +18,11 @@ impl Parser<Type> for Type {
 
 fn parse_union(input: &str) -> IResult<&str, Type> {
     let (input, types) = delimited(
-        tag("("),
+        delimited(multispace0, tag("("), multispace0),
         separated_list1(delimited(multispace1, tag("or"), multispace1), Type::parse),
-        tag(")"),
+        preceded(multispace0, tag(")")),
     )(input)?;
+    // Change this to simply return an error.
     assert!(types.len() > 1, "Found union with only a single type");
 
     Ok((input, Type::Union(types)))

@@ -38,7 +38,7 @@ pub enum ConstValue {
 pub struct Attribute {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
-    pub special: AttrSpecial,
+    pub special: Option<AttrSpecial>,
     pub r#type: Type,
     pub identifier: String,
 }
@@ -54,9 +54,10 @@ pub enum AttrSpecial {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Operation {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub special: OpSpecial,
+    pub special: Option<OpSpecial>,
     pub r#type: Type,
     pub identifier: String,
+    pub arguments: Vec<Argument>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
