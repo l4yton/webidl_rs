@@ -3,7 +3,13 @@ mod members;
 mod parser;
 mod types;
 
-use nom::{bytes::complete::tag, multi::separated_list0, sequence::delimited, IResult};
+use nom::{
+    bytes::complete::tag,
+    combinator::eof,
+    multi::separated_list0,
+    sequence::{delimited, terminated},
+    IResult,
+};
 
 pub use members::*;
 pub use types::*;
@@ -25,21 +31,24 @@ pub trait Parser<T> {
 }
 
 pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
-    delimited(
-        parser::multispace_or_comment0,
-        separated_list0(
+    terminated(
+        delimited(
+            parser::multispace_or_comment0,
+            separated_list0(
+                delimited(
+                    parser::multispace_or_comment0,
+                    tag(";"),
+                    parser::multispace_or_comment0,
+                ),
+                Definition::parse,
+            ),
             delimited(
                 parser::multispace_or_comment0,
                 tag(";"),
                 parser::multispace_or_comment0,
             ),
-            Definition::parse,
         ),
-        delimited(
-            parser::multispace_or_comment0,
-            tag(";"),
-            parser::multispace_or_comment0,
-        ),
+        eof,
     )(input)
 }
 
