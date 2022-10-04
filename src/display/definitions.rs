@@ -40,10 +40,15 @@ fn display_dictionary_members(members: &Vec<DictionaryMember>) -> String {
 
 fn display_enum_values(values: &Vec<String>) -> String {
     let mut result = String::new();
-    values.iter().for_each(|value| {
+    let number = values.len();
+    values.iter().enumerate().for_each(|(i, value)| {
         result.push_str("\t\"");
         result.push_str(&value.to_string());
-        result.push_str("\"\n");
+        result.push_str("\"");
+        if i + 1 < number {
+            result.push_str(",");
+        }
+        result.push_str("\n");
     });
 
     result
