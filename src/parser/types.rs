@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, Parser, Record, StandardType, Type};
+use crate::{parser, Parser, RecordType, StandardType, Type, ExtendedAttribute, UnionType};
 
 impl Parser<Type> for Type {
     fn parse(input: &str) -> IResult<&str, Type> {
@@ -16,6 +16,8 @@ impl Parser<Type> for Type {
 }
 
 fn parse_union(input: &str) -> IResult<&str, Type> {
+    let (input, ext_attrs) =
+        map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, types) = delimited(
         terminated(tag("("), parser::multispace_or_comment0),
         separated_list1(
@@ -31,10 +33,12 @@ fn parse_union(input: &str) -> IResult<&str, Type> {
     // Change this to simply return an error.
     assert!(types.len() > 1, "Found union with only a single type");
 
-    Ok((input, Type::Union(types)))
+    Ok((input, Type::Union(UnionType { ext_attrs, types })))
 }
 
 fn parse_standard_type(input: &str) -> IResult<&str, Type> {
+    let (input, ext_attrs) =
+        map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, primitive_type_with_space) = opt(alt((
         tag("unsigned short"),
         tag("unsigned long long"),
@@ -49,6 +53,7 @@ fn parse_standard_type(input: &str) -> IResult<&str, Type> {
         return Ok((
             input,
             Type::Standard(StandardType {
+                ext_attrs,
                 name: name.to_string(),
                 nullable,
             }),
@@ -61,6 +66,7 @@ fn parse_standard_type(input: &str) -> IResult<&str, Type> {
     Ok((
         input,
         Type::Standard(StandardType {
+            ext_attrs,
             name: name.to_string(),
             nullable,
         }),
@@ -112,7 +118,7 @@ fn parse_record(input: &str) -> IResult<&str, Type> {
 
     Ok((
         input,
-        Type::Record(Record {
+        Type::Record(RecordType {
             key: Box::new(key),
             value: Box::new(value),
         }),
