@@ -17,30 +17,36 @@ fn display_inheritance(inheritance: &Option<String>) -> String {
 }
 
 fn display_members(members: &Vec<Member>) -> String {
-    members.iter().fold(String::new(), |mut a, b| {
-        a.push_str("\t");
-        a.push_str(&b.to_string());
-        a.push_str("\n");
-        a
-    })
+    let mut result = String::new();
+    members.iter().for_each(|member| {
+        result.push_str("\t");
+        result.push_str(&member.to_string());
+        result.push_str("\n");
+    });
+
+    result
 }
 
 fn display_dictionary_members(members: &Vec<DictionaryMember>) -> String {
-    members.iter().fold(String::new(), |mut a, b| {
-        a.push_str("\t");
-        a.push_str(&b.to_string());
-        a.push_str("\n");
-        a
-    })
+    let mut result = String::new();
+    members.iter().for_each(|member| {
+        result.push_str("\t");
+        result.push_str(&member.to_string());
+        result.push_str("\n");
+    });
+
+    result
 }
 
 fn display_enum_values(values: &Vec<String>) -> String {
-    values.iter().fold(String::new(), |mut a, b| {
-        a.push_str("\t");
-        a.push_str(&b.to_string());
-        a.push_str("\n");
-        a
-    })
+    let mut result = String::new();
+    values.iter().for_each(|value| {
+        result.push_str("\t");
+        result.push_str(&value.to_string());
+        result.push_str("\n");
+    });
+
+    result
 }
 
 impl fmt::Display for Definition {

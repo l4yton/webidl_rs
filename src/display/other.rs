@@ -20,11 +20,16 @@ pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
 }
 
 pub(crate) fn display_arguments(arguments: &Vec<Argument>) -> String {
-    arguments.iter().fold(String::new(), |mut a, b| {
-        a.push_str(&b.to_string());
-        a.push_str(", ");
-        a
-    })
+    let mut result = String::new();
+    let number = arguments.len();
+    arguments.iter().enumerate().for_each(|(i, argument)| {
+        result.push_str(&argument.to_string());
+        if i + 1 < number {
+            result.push_str(", ");
+        }
+    });
+
+    result
 }
 
 impl fmt::Display for Argument {
