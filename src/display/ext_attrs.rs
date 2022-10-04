@@ -24,7 +24,14 @@ impl fmt::Display for ExtAttrValue {
                 named_args_list.identifier,
                 display::display_arguments(&named_args_list.arguments)
             ),
-            ExtAttrValue::Identifier(identifier) => write!(f, "={}", identifier),
+            ExtAttrValue::Identifier(identifier) => {
+                // Wrap the idenitifer in quotes if it has a newline.
+                if identifier.contains("\n") {
+                    return write!(f, "=\"{}\"", identifier);
+                }
+
+                write!(f, "={}", identifier)
+            }
             ExtAttrValue::IdentifierList(identifier_list) => {
                 write!(f, "=({})", identifier_list.join(", "))
             }
