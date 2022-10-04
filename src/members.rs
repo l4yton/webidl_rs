@@ -1,8 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{Argument, ExtendedAttribute, Type};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum Member {
     Constant(Constant),
     Attribute(Attribute),
@@ -14,7 +12,7 @@ pub enum Member {
     Setlike(Setlike),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Constant {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
@@ -22,7 +20,7 @@ pub struct Constant {
     pub value: ConstValue,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum ConstValue {
     Boolean(bool),
     Integer(i64),
@@ -33,7 +31,7 @@ pub enum ConstValue {
     NaN,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Attribute {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -42,14 +40,14 @@ pub struct Attribute {
     pub identifier: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum AttrSpecial {
     Static,
     Stringifier,
     Inherit,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Operation {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub special: Option<OpSpecial>,
@@ -58,7 +56,7 @@ pub struct Operation {
     pub arguments: Vec<Argument>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum OpSpecial {
     Static,
     Getter,
@@ -66,18 +64,18 @@ pub enum OpSpecial {
     Deleter,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Constructor {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub arguments: Vec<Argument>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Stringifer {
     pub ext_attrs: Vec<ExtendedAttribute>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Iterable {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#async: bool,
@@ -86,7 +84,7 @@ pub struct Iterable {
     pub arguments: Option<Vec<Argument>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Maplike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -94,7 +92,7 @@ pub struct Maplike {
     pub value_type: Type,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Setlike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,

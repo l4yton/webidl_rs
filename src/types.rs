@@ -1,8 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 use crate::ExtendedAttribute;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum Type {
     Sequence(Box<Type>),
     Record(RecordType),
@@ -15,20 +13,20 @@ pub enum Type {
 
 // AFAIU, only Union and StandardType can have extended attributes.
 // https://webidl.spec.whatwg.org/#idl-annotated-types
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct UnionType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub types: Vec<Type>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct RecordType {
     // Can only be "DOMString", "USVString" or "ByteString".
     pub key: Box<Type>,
     pub value: Box<Type>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct StandardType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub name: String,

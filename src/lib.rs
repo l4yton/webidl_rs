@@ -1,12 +1,24 @@
+mod display;
 mod members;
 mod parser;
 mod types;
 
 use nom::{bytes::complete::tag, multi::separated_list0, sequence::delimited, IResult};
-use serde::{Deserialize, Serialize};
 
 pub use members::*;
 pub use types::*;
+
+macro_rules! ternary {
+    ($c:expr, $v:expr, $v1:expr) => {
+        if $c {
+            $v
+        } else {
+            $v1
+        }
+    };
+}
+
+pub(crate) use ternary;
 
 pub trait Parser<T> {
     fn parse(input: &str) -> IResult<&str, T>;
@@ -31,7 +43,15 @@ pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
     )(input)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+pub fn to_string(definitions: &Vec<Definition>) -> String {
+    definitions.iter().fold(String::new(), |mut a, b| {
+        a.push_str(&b.to_string());
+        a.push_str("\n\n");
+        a
+    })
+}
+
+#[derive(Debug, Clone)]
 pub enum Definition {
     Interface(Interface),
     InterfaceMixin(InterfaceMixin),
@@ -44,7 +64,7 @@ pub enum Definition {
     Typedef(Typedef),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Interface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -53,7 +73,7 @@ pub struct Interface {
     pub members: Vec<Member>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct InterfaceMixin {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -61,21 +81,21 @@ pub struct InterfaceMixin {
     pub members: Vec<Member>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Includes {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub interface: String,
     pub mixin: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct CallbackInterface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
     pub members: Vec<Member>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Namespace {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -84,7 +104,7 @@ pub struct Namespace {
     pub members: Vec<Member>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Dictionary {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -93,14 +113,14 @@ pub struct Dictionary {
     pub members: Vec<DictionaryMember>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Enumeration {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
     pub values: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct CallbackFunction {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
@@ -108,14 +128,14 @@ pub struct CallbackFunction {
     pub arguments: Vec<Argument>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Typedef {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
     pub identifier: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct DictionaryMember {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub required: bool,
@@ -124,13 +144,13 @@ pub struct DictionaryMember {
     pub default: Option<DefaultValue>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct ExtendedAttribute {
     pub identifier: String,
     pub value: Option<ExtAttrValue>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum ExtAttrValue {
     ArgumentList(Vec<Argument>),
     NamedArgumentList(NamedArgumentList),
@@ -140,13 +160,13 @@ pub enum ExtAttrValue {
     Wildcard,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct NamedArgumentList {
     pub identifier: String,
     pub arguments: Vec<Argument>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Argument {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub optional: bool,
@@ -156,7 +176,7 @@ pub struct Argument {
     pub default: Option<DefaultValue>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub enum DefaultValue {
     Boolean(bool),
     Integer(i64),
