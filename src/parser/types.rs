@@ -18,7 +18,11 @@ impl Parser<Type> for Type {
 fn parse_union(input: &str) -> IResult<&str, Type> {
     let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, types) = delimited(
-        terminated(tag("("), parser::multispace_or_comment0),
+        delimited(
+            parser::multispace_or_comment0,
+            tag("("),
+            parser::multispace_or_comment0,
+        ),
         separated_list1(
             delimited(
                 parser::multispace_or_comment1,
@@ -37,14 +41,17 @@ fn parse_union(input: &str) -> IResult<&str, Type> {
 
 fn parse_standard_type(input: &str) -> IResult<&str, Type> {
     let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
-    let (input, primitive_type_with_space) = opt(alt((
-        tag("unsigned short"),
-        tag("unsigned long long"),
-        tag("unsigned long"),
-        tag("long long"),
-        tag("unrestricted float"),
-        tag("unrestricted double"),
-    )))(input)?;
+    let (input, primitive_type_with_space) = preceded(
+        parser::multispace_or_comment0,
+        opt(alt((
+            tag("unsigned short"),
+            tag("unsigned long long"),
+            tag("unsigned long"),
+            tag("long long"),
+            tag("unrestricted float"),
+            tag("unrestricted double"),
+        ))),
+    )(input)?;
 
     if let Some(name) = primitive_type_with_space {
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
