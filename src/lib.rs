@@ -21,10 +21,10 @@ macro_rules! ternary {
 pub(crate) use ternary;
 
 pub trait Parser<T> {
-    fn parse<'a>(input: &'a str) -> IResult<&'a str, T>;
+    fn parse(input: &str) -> IResult<&str, T>;
 }
 
-pub fn parse<'a>(input: &'a str) -> IResult<&'a str, Vec<Definition>> {
+pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
     delimited(
         parser::multispace_or_comment0,
         separated_list0(
