@@ -28,10 +28,9 @@ impl fmt::Display for UnionType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
 
-        let ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
+        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            result.push_str(&ext_attrs_str);
-            result.push_str(" ");
+            ext_attrs_str.push_str(" ");
         }
 
         let number = self.types.len();
@@ -43,18 +42,15 @@ impl fmt::Display for UnionType {
             }
         });
 
-        write!(f, "({})", result)
+        write!(f, "{}({})", ext_attrs_str, result)
     }
 }
 
 impl fmt::Display for StandardType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut result = String::new();
-
-        let ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
+        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            result.push_str(&ext_attrs_str);
-            result.push_str(" ");
+            ext_attrs_str.push_str(" ");
         }
 
         write!(

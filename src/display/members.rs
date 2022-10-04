@@ -29,8 +29,8 @@ impl fmt::Display for Constant {
 
         write!(
             f,
-            "{}const {} = {};",
-            ext_attrs_str, self.identifier, self.value,
+            "{}const {} {} = {};",
+            ext_attrs_str, self.r#type, self.identifier, self.value,
         )
     }
 }
