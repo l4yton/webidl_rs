@@ -126,7 +126,8 @@ impl Parser<Vec<DictionaryMember>> for DictionaryMember {
                     delimited(multispace_or_comment0, tag(";"), multispace_or_comment0),
                     parse_single_dictionary_member,
                 ),
-                preceded(multispace_or_comment0, tag(";")),
+                // Make the tag(";") optional in case there are no member.
+                preceded(multispace_or_comment0, opt(tag(";"))),
             ),
             delimited(multispace_or_comment0, tag("}"), multispace_or_comment0),
         )(input)

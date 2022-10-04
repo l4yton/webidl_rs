@@ -27,7 +27,8 @@ impl Parser<Vec<Member>> for Member {
                     ),
                     parse_single_member,
                 ),
-                preceded(parser::multispace_or_comment0, tag(";")),
+                // Make the tag(";") optional in case there are no member.
+                preceded(parser::multispace_or_comment0, opt(tag(";"))),
             ),
             preceded(parser::multispace_or_comment0, tag("}")),
         )(input)
