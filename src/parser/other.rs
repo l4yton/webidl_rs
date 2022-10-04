@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while, take_while_m_n},
-    character::complete::{digit1, multispace0, multispace1},
+    character::complete::{digit1, multispace1},
     combinator::{map, map_res, not, opt, peek, recognize, success},
-    multi::separated_list0,
+    multi::{many0, many1, separated_list0},
     number::complete::float,
     sequence::{delimited, preceded, terminated, tuple},
     IResult,
@@ -23,15 +23,31 @@ pub(crate) fn identifier(input: &str) -> IResult<&str, &str> {
     )))(input)
 }
 
+pub(crate) fn multispace_or_comment0(input: &str) -> IResult<&str, Vec<&str>> {
+    many0(alt((
+        multispace1,
+        delimited(tag("//"), take_until("\n"), tag("\n")),
+        delimited(tag("/*"), take_until("*/"), tag("*/")),
+    )))(input)
+}
+
+pub(crate) fn multispace_or_comment1(input: &str) -> IResult<&str, Vec<&str>> {
+    many1(alt((
+        multispace1,
+        delimited(tag("//"), take_until("\n"), tag("\n")),
+        delimited(tag("/*"), take_until("*/"), tag("*/")),
+    )))(input)
+}
+
 impl Parser<Vec<Argument>> for Argument {
     fn parse(input: &str) -> IResult<&str, Vec<Argument>> {
         delimited(
-            delimited(multispace0, tag("("), multispace0),
+            terminated(tag("("), multispace_or_comment0),
             separated_list0(
-                delimited(multispace0, tag(","), multispace0),
+                delimited(multispace_or_comment0, tag(","), multispace_or_comment0),
                 parse_single_argument,
             ),
-            preceded(multispace0, tag(")")),
+            preceded(multispace_or_comment0, tag(")")),
         )(input)
     }
 }
@@ -39,14 +55,18 @@ impl Parser<Vec<Argument>> for Argument {
 fn parse_single_argument(input: &str) -> IResult<&str, Argument> {
     let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, optional) = map(
-        opt(delimited(multispace0, tag("optional"), multispace1)),
+        opt(delimited(
+            multispace_or_comment0,
+            tag("optional"),
+            multispace_or_comment1,
+        )),
         |o| o.is_some(),
     )(input)?;
-    let (input, r#type) = preceded(multispace0, Type::parse)(input)?;
+    let (input, r#type) = preceded(multispace_or_comment0, Type::parse)(input)?;
     let (input, variadic) = map(opt(tag("...")), |o| o.is_some())(input)?;
-    let (input, identifier) = preceded(multispace1, identifier)(input)?;
+    let (input, identifier) = preceded(multispace_or_comment1, identifier)(input)?;
     let (input, default) = opt(preceded(
-        delimited(multispace0, tag("="), multispace0),
+        delimited(multispace_or_comment0, tag("="), multispace_or_comment0),
         DefaultValue::parse,
     ))(input)?;
 
@@ -95,19 +115,16 @@ impl Parser<DefaultValue> for DefaultValue {
 
 impl Parser<Vec<DictionaryMember>> for DictionaryMember {
     fn parse(input: &str) -> IResult<&str, Vec<DictionaryMember>> {
-        terminated(
-            delimited(
-                delimited(multispace0, tag("{"), multispace0),
-                terminated(
-                    separated_list0(
-                        delimited(multispace0, tag(";"), multispace0),
-                        parse_single_dictionary_member,
-                    ),
-                    preceded(multispace0, tag(";")),
+        delimited(
+            terminated(tag("{"), multispace_or_comment0),
+            terminated(
+                separated_list0(
+                    delimited(multispace_or_comment0, tag(";"), multispace_or_comment0),
+                    parse_single_dictionary_member,
                 ),
-                delimited(multispace0, tag("}"), multispace0),
+                preceded(multispace_or_comment0, tag(";")),
             ),
-            tag(";"),
+            delimited(multispace_or_comment0, tag("}"), multispace_or_comment0),
         )(input)
     }
 }
@@ -115,13 +132,17 @@ impl Parser<Vec<DictionaryMember>> for DictionaryMember {
 fn parse_single_dictionary_member(input: &str) -> IResult<&str, DictionaryMember> {
     let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, required) = map(
-        opt(delimited(multispace0, tag("required"), multispace1)),
+        opt(delimited(
+            multispace_or_comment0,
+            tag("required"),
+            multispace_or_comment1,
+        )),
         |o| o.is_some(),
     )(input)?;
-    let (input, r#type) = preceded(multispace0, Type::parse)(input)?;
-    let (input, identifier) = preceded(multispace1, identifier)(input)?;
+    let (input, r#type) = preceded(multispace_or_comment0, Type::parse)(input)?;
+    let (input, identifier) = preceded(multispace_or_comment1, identifier)(input)?;
     let (input, default) = opt(preceded(
-        delimited(multispace0, tag("="), multispace0),
+        delimited(multispace_or_comment0, tag("="), multispace_or_comment0),
         DefaultValue::parse,
     ))(input)?;
 

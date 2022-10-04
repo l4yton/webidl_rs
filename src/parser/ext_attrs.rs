@@ -1,7 +1,6 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::multispace0,
     combinator::opt,
     multi::separated_list0,
     sequence::{delimited, preceded, terminated},
@@ -13,12 +12,16 @@ use crate::{parser, Argument, ExtAttrValue, ExtendedAttribute, Parser};
 impl Parser<Vec<ExtendedAttribute>> for ExtendedAttribute {
     fn parse(input: &str) -> IResult<&str, Vec<ExtendedAttribute>> {
         delimited(
-            delimited(multispace0, tag("["), multispace0),
+            terminated(tag("["), parser::multispace_or_comment0),
             separated_list0(
-                delimited(multispace0, tag(","), multispace0),
+                delimited(
+                    parser::multispace_or_comment0,
+                    tag(","),
+                    parser::multispace_or_comment0,
+                ),
                 parse_single_ext_attr,
             ),
-            delimited(multispace0, tag("]"), multispace0),
+            preceded(parser::multispace_or_comment0, tag("]")),
         )(input)
     }
 }
@@ -27,7 +30,11 @@ fn parse_single_ext_attr(input: &str) -> IResult<&str, ExtendedAttribute> {
     let (input, identifier) = parser::identifier(input)?;
     let (input, value) = opt(alt((
         preceded(
-            delimited(multispace0, tag("="), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("="),
+                parser::multispace_or_comment0,
+            ),
             ExtAttrValue::parse,
         ),
         // This is deprecated, but was used by: `Constructor(double x, double y)`.
@@ -45,7 +52,7 @@ fn parse_single_ext_attr(input: &str) -> IResult<&str, ExtendedAttribute> {
 }
 
 fn parse_ext_attr_arg_list(input: &str) -> IResult<&str, ExtAttrValue> {
-    let (input, arguments) = Argument::parse(input)?;
+    let (input, arguments) = preceded(parser::multispace_or_comment0, Argument::parse)(input)?;
     Ok((input, ExtAttrValue::ArgumentList(arguments)))
 }
 
@@ -66,7 +73,7 @@ impl Parser<ExtAttrValue> for ExtAttrValue {
 
 fn parse_ext_attr_named_arg_list(input: &str) -> IResult<&str, ExtAttrValue> {
     let (input, identifier) = parser::identifier(input)?;
-    let (input, arguments) = Argument::parse(input)?;
+    let (input, arguments) = preceded(parser::multispace_or_comment0, Argument::parse)(input)?;
 
     Ok((
         input,
@@ -84,12 +91,16 @@ fn parse_ext_attr_ident(input: &str) -> IResult<&str, ExtAttrValue> {
 
 fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
     let (input, identifiers) = delimited(
-        terminated(tag("("), multispace0),
+        terminated(tag("("), parser::multispace_or_comment0),
         separated_list0(
-            delimited(multispace0, tag(","), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag(","),
+                parser::multispace_or_comment0,
+            ),
             parser::identifier,
         ),
-        preceded(multispace0, tag(")")),
+        preceded(parser::multispace_or_comment0, tag(")")),
     )(input)?;
 
     Ok((

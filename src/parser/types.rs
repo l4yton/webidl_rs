@@ -1,10 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, tag_no_case},
-    character::complete::{multispace0, multispace1},
+    bytes::complete::tag,
     combinator::{map, opt},
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair},
+    sequence::{delimited, preceded, separated_pair, terminated},
     IResult,
 };
 
@@ -18,9 +17,16 @@ impl Parser<Type> for Type {
 
 fn parse_union(input: &str) -> IResult<&str, Type> {
     let (input, types) = delimited(
-        delimited(multispace0, tag("("), multispace0),
-        separated_list1(delimited(multispace1, tag("or"), multispace1), Type::parse),
-        preceded(multispace0, tag(")")),
+        terminated(tag("("), parser::multispace_or_comment0),
+        separated_list1(
+            delimited(
+                parser::multispace_or_comment1,
+                tag("or"),
+                parser::multispace_or_comment1,
+            ),
+            Type::parse,
+        ),
+        preceded(parser::multispace_or_comment0, tag(")")),
     )(input)?;
     // Change this to simply return an error.
     assert!(types.len() > 1, "Found union with only a single type");
@@ -73,8 +79,12 @@ fn parse_wrapped_type(input: &str) -> IResult<&str, Type> {
 
 fn parse_sequence(input: &str) -> IResult<&str, Type> {
     let (input, r#type) = delimited(
-        tag_no_case("sequence<"),
-        delimited(multispace0, Type::parse, multispace0),
+        tag("sequence<"),
+        delimited(
+            parser::multispace_or_comment0,
+            Type::parse,
+            parser::multispace_or_comment0,
+        ),
         tag(">"),
     )(input)?;
 
@@ -83,11 +93,19 @@ fn parse_sequence(input: &str) -> IResult<&str, Type> {
 
 fn parse_record(input: &str) -> IResult<&str, Type> {
     let (input, (key, value)) = delimited(
-        tag_no_case("record<"),
+        tag("record<"),
         separated_pair(
-            delimited(multispace0, Type::parse, multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                Type::parse,
+                parser::multispace_or_comment0,
+            ),
             tag(","),
-            delimited(multispace0, Type::parse, multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                Type::parse,
+                parser::multispace_or_comment0,
+            ),
         ),
         tag(">"),
     )(input)?;
@@ -103,8 +121,12 @@ fn parse_record(input: &str) -> IResult<&str, Type> {
 
 fn parse_promise(input: &str) -> IResult<&str, Type> {
     let (input, r#type) = delimited(
-        tag_no_case("promise<"),
-        delimited(multispace0, Type::parse, multispace0),
+        tag("Promise<"),
+        delimited(
+            parser::multispace_or_comment0,
+            Type::parse,
+            parser::multispace_or_comment0,
+        ),
         tag(">"),
     )(input)?;
 
@@ -113,8 +135,12 @@ fn parse_promise(input: &str) -> IResult<&str, Type> {
 
 fn parse_frozen_array(input: &str) -> IResult<&str, Type> {
     let (input, r#type) = delimited(
-        tag_no_case("frozenarray<"),
-        delimited(multispace0, Type::parse, multispace0),
+        tag("FrozenArray<"),
+        delimited(
+            parser::multispace_or_comment0,
+            Type::parse,
+            parser::multispace_or_comment0,
+        ),
         tag(">"),
     )(input)?;
 
@@ -123,8 +149,12 @@ fn parse_frozen_array(input: &str) -> IResult<&str, Type> {
 
 fn parse_observable_array(input: &str) -> IResult<&str, Type> {
     let (input, r#type) = delimited(
-        tag_no_case("observablearray<"),
-        delimited(multispace0, Type::parse, multispace0),
+        tag("ObservableArray<"),
+        delimited(
+            parser::multispace_or_comment0,
+            Type::parse,
+            parser::multispace_or_comment0,
+        ),
         tag(">"),
     )(input)?;
 

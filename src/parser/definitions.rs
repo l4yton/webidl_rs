@@ -1,10 +1,10 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{multispace0, multispace1},
+    character::complete::multispace0,
     combinator::{map, opt},
     multi::separated_list0,
-    sequence::{delimited, preceded, separated_pair, terminated},
+    sequence::{delimited, preceded, separated_pair},
     IResult,
 };
 
@@ -35,18 +35,30 @@ impl Parser<Definition> for Interface {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, partial) = map(
-            opt(delimited(multispace0, tag("partial"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("partial"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("interface"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("interface"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
         let (input, inheritance) = opt(preceded(
-            delimited(multispace0, tag(":"), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag(":"),
+                parser::multispace_or_comment0,
+            ),
             parser::identifier,
         ))(input)?;
-        let (input, members) = Member::parse(input)?;
+        let (input, members) = preceded(parser::multispace_or_comment0, Member::parse)(input)?;
 
         Ok((
             input,
@@ -66,14 +78,22 @@ impl Parser<Definition> for InterfaceMixin {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, partial) = map(
-            opt(delimited(multispace0, tag("partial"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("partial"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("interface mixin"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("interface mixin"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
-        let (input, members) = Member::parse(input)?;
+        let (input, members) = preceded(parser::multispace_or_comment0, Member::parse)(input)?;
 
         Ok((
             input,
@@ -91,13 +111,14 @@ impl Parser<Definition> for Includes {
     fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
-        let (input, (interface, mixin)) = terminated(
-            separated_pair(
-                delimited(multispace0, parser::identifier, multispace1),
-                tag("includes"),
-                preceded(multispace1, parser::identifier),
+        let (input, (interface, mixin)) = separated_pair(
+            delimited(
+                parser::multispace_or_comment0,
+                parser::identifier,
+                parser::multispace_or_comment1,
             ),
-            preceded(multispace0, tag(";")),
+            tag("includes"),
+            preceded(parser::multispace_or_comment1, parser::identifier),
         )(input)?;
 
         Ok((
@@ -115,8 +136,15 @@ impl Parser<Definition> for CallbackInterface {
     fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
-        let (input, identifier) = preceded(multispace0, parser::identifier)(input)?;
-        let (input, members) = Member::parse(input)?;
+        let (input, identifier) = preceded(
+            delimited(
+                parser::multispace_or_comment0,
+                tag("callback interface"),
+                parser::multispace_or_comment1,
+            ),
+            parser::identifier,
+        )(input)?;
+        let (input, members) = preceded(parser::multispace_or_comment0, Member::parse)(input)?;
 
         Ok((
             input,
@@ -134,18 +162,30 @@ impl Parser<Definition> for Namespace {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, partial) = map(
-            opt(delimited(multispace0, tag("partial"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("partial"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("namespace"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("namespace"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
         let (input, inheritance) = opt(preceded(
-            delimited(multispace0, tag(":"), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag(":"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         ))(input)?;
-        let (input, members) = Member::parse(input)?;
+        let (input, members) = preceded(parser::multispace_or_comment0, Member::parse)(input)?;
 
         Ok((
             input,
@@ -165,18 +205,31 @@ impl Parser<Definition> for Dictionary {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, partial) = map(
-            opt(delimited(multispace0, tag("partial"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("partial"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("dictionary"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("dictionary"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
         let (input, inheritance) = opt(preceded(
-            delimited(multispace0, tag(":"), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag(":"),
+                parser::multispace_or_comment0,
+            ),
             parser::identifier,
         ))(input)?;
-        let (input, members) = DictionaryMember::parse(input)?;
+        let (input, members) =
+            preceded(parser::multispace_or_comment0, DictionaryMember::parse)(input)?;
 
         Ok((
             input,
@@ -196,19 +249,32 @@ impl Parser<Definition> for Enumeration {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("enum"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("enum"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
-        let (input, values) = terminated(
+        let (input, values) = delimited(
             delimited(
-                delimited(multispace0, tag("{"), multispace0),
-                separated_list0(
-                    delimited(multispace0, tag(","), multispace0),
-                    delimited(tag("\""), take_until("\""), tag("\"")),
-                ),
-                delimited(multispace0, tag("}"), multispace0),
+                parser::multispace_or_comment0,
+                tag("{"),
+                parser::multispace_or_comment0,
             ),
-            tag(";"),
+            separated_list0(
+                delimited(
+                    parser::multispace_or_comment0,
+                    tag(","),
+                    parser::multispace_or_comment0,
+                ),
+                delimited(tag("\""), take_until("\""), tag("\"")),
+            ),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("}"),
+                parser::multispace_or_comment0,
+            ),
         )(input)?;
 
         Ok((
@@ -227,12 +293,22 @@ impl Parser<Definition> for CallbackFunction {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, identifier) = preceded(
-            delimited(multispace0, tag("callback"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("callback"),
+                parser::multispace_or_comment1,
+            ),
             parser::identifier,
         )(input)?;
-        let (input, r#type) =
-            preceded(delimited(multispace1, tag("="), multispace0), Type::parse)(input)?;
-        let (input, arguments) = Argument::parse(input)?;
+        let (input, r#type) = preceded(
+            delimited(
+                parser::multispace_or_comment1,
+                tag("="),
+                parser::multispace_or_comment0,
+            ),
+            Type::parse,
+        )(input)?;
+        let (input, arguments) = preceded(multispace0, Argument::parse)(input)?;
 
         Ok((
             input,
@@ -251,10 +327,15 @@ impl Parser<Definition> for Typedef {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, r#type) = preceded(
-            delimited(multispace0, tag("typedef"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("typedef"),
+                parser::multispace_or_comment1,
+            ),
             Type::parse,
         )(input)?;
-        let (input, identifier) = preceded(multispace1, parser::identifier)(input)?;
+        let (input, identifier) =
+            preceded(parser::multispace_or_comment1, parser::identifier)(input)?;
 
         Ok((
             input,

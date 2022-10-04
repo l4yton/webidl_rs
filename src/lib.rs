@@ -2,7 +2,7 @@ mod members;
 mod parser;
 mod types;
 
-use nom::{character::complete::multispace0, multi::separated_list0, IResult};
+use nom::{bytes::complete::tag, multi::separated_list0, sequence::delimited, IResult};
 use serde::{Deserialize, Serialize};
 
 pub use members::*;
@@ -10,6 +10,25 @@ pub use types::*;
 
 pub trait Parser<T> {
     fn parse(input: &str) -> IResult<&str, T>;
+}
+
+pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
+    delimited(
+        parser::multispace_or_comment0,
+        separated_list0(
+            delimited(
+                parser::multispace_or_comment0,
+                tag(";"),
+                parser::multispace_or_comment0,
+            ),
+            Definition::parse,
+        ),
+        delimited(
+            parser::multispace_or_comment0,
+            tag(";"),
+            parser::multispace_or_comment0,
+        ),
+    )(input)
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{digit1, multispace0, multispace1},
+    character::complete::digit1,
     combinator::{map, map_res, not, opt, peek},
     multi::separated_list0,
     number::complete::float,
@@ -16,19 +16,20 @@ use crate::{
 
 impl Parser<Vec<Member>> for Member {
     fn parse(input: &str) -> IResult<&str, Vec<Member>> {
-        terminated(
-            delimited(
-                delimited(multispace0, tag("{"), multispace0),
-                terminated(
-                    separated_list0(
-                        delimited(multispace0, tag(";"), multispace0),
-                        parse_single_member,
+        delimited(
+            terminated(tag("{"), parser::multispace_or_comment0),
+            terminated(
+                separated_list0(
+                    delimited(
+                        parser::multispace_or_comment0,
+                        tag(";"),
+                        parser::multispace_or_comment0,
                     ),
-                    preceded(multispace0, tag(";")),
+                    parse_single_member,
                 ),
-                delimited(multispace0, tag("}"), multispace0),
+                preceded(parser::multispace_or_comment0, tag(";")),
             ),
-            tag(";"),
+            preceded(parser::multispace_or_comment0, tag("}")),
         )(input)
     }
 }
@@ -51,12 +52,21 @@ impl Parser<Member> for Constant {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, r#type) = preceded(
-            delimited(multispace0, tag("const"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("const"),
+                parser::multispace_or_comment1,
+            ),
             Type::parse,
         )(input)?;
-        let (input, identifier) = preceded(multispace1, parser::identifier)(input)?;
+        let (input, identifier) =
+            preceded(parser::multispace_or_comment1, parser::identifier)(input)?;
         let (input, value) = preceded(
-            delimited(multispace0, tag("="), multispace0),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("="),
+                parser::multispace_or_comment0,
+            ),
             ConstValue::parse,
         )(input)?;
 
@@ -99,23 +109,32 @@ impl Parser<Member> for Attribute {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, readonly) = map(
-            opt(delimited(multispace0, tag("readonly"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("readonly"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, special) = opt(delimited(
-            multispace0,
+            parser::multispace_or_comment0,
             alt((
                 map(tag("static"), |_| AttrSpecial::Static),
                 map(tag("stringifier"), |_| AttrSpecial::Stringifier),
                 map(tag("inherit"), |_| AttrSpecial::Inherit),
             )),
-            multispace1,
+            parser::multispace_or_comment1,
         ))(input)?;
         let (input, r#type) = preceded(
-            delimited(multispace0, tag("attribute"), multispace1),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("attribute"),
+                parser::multispace_or_comment1,
+            ),
             Type::parse,
         )(input)?;
-        let (input, identifier) = preceded(multispace1, parser::identifier)(input)?;
+        let (input, identifier) =
+            preceded(parser::multispace_or_comment1, parser::identifier)(input)?;
 
         Ok((
             input,
@@ -135,18 +154,22 @@ impl Parser<Member> for Operation {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, special) = opt(delimited(
-            multispace0,
+            parser::multispace_or_comment0,
             alt((
                 map(tag("static"), |_| OpSpecial::Static),
                 map(tag("getter"), |_| OpSpecial::Getter),
                 map(tag("setter"), |_| OpSpecial::Setter),
                 map(tag("deleter"), |_| OpSpecial::Deleter),
             )),
-            multispace1,
+            parser::multispace_or_comment1,
         ))(input)?;
-        let (input, r#type) = delimited(multispace0, Type::parse, multispace1)(input)?;
+        let (input, r#type) = delimited(
+            parser::multispace_or_comment0,
+            Type::parse,
+            parser::multispace_or_comment1,
+        )(input)?;
         let (input, identifier) = parser::identifier(input)?;
-        let (input, arguments) = Argument::parse(input)?;
+        let (input, arguments) = preceded(parser::multispace_or_comment0, Argument::parse)(input)?;
 
         Ok((
             input,
@@ -165,7 +188,10 @@ impl Parser<Member> for Constructor {
     fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
-        let (input, arguments) = preceded(tag("constructor"), Argument::parse)(input)?;
+        let (input, arguments) = preceded(
+            tag("constructor"),
+            preceded(parser::multispace_or_comment0, Argument::parse),
+        )(input)?;
 
         Ok((
             input,
@@ -192,21 +218,34 @@ impl Parser<Member> for Iterable {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, r#async) = map(
-            opt(delimited(multispace0, tag("async"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("async"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, (value_type, key_type)) = delimited(
-            preceded(multispace0, tag("iterable<")),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("iterable<"),
+                parser::multispace_or_comment0,
+            ),
             pair(
                 Type::parse,
                 opt(preceded(
-                    delimited(multispace0, tag(","), multispace0),
+                    delimited(
+                        parser::multispace_or_comment0,
+                        tag(","),
+                        parser::multispace_or_comment0,
+                    ),
                     Type::parse,
                 )),
             ),
-            tag(">"),
+            preceded(parser::multispace_or_comment0, tag(">")),
         )(input)?;
-        let (input, arguments) = opt(Argument::parse)(input)?;
+        let (input, arguments) =
+            opt(preceded(parser::multispace_or_comment0, Argument::parse))(input)?;
 
         // iterable<key_type, value_type>
         if let Some(key_type) = key_type {
@@ -240,17 +279,29 @@ impl Parser<Member> for Maplike {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, readonly) = map(
-            opt(delimited(multispace0, tag("readonly"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("readonly"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, (key_type, value_type)) = delimited(
-            preceded(multispace0, tag("maplike<")),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("maplike<"),
+                parser::multispace_or_comment0,
+            ),
             separated_pair(
                 Type::parse,
-                delimited(multispace0, tag(","), multispace0),
+                delimited(
+                    parser::multispace_or_comment0,
+                    tag(","),
+                    parser::multispace_or_comment0,
+                ),
                 Type::parse,
             ),
-            tag(">"),
+            preceded(parser::multispace_or_comment0, tag(">")),
         )(input)?;
 
         Ok((
@@ -270,13 +321,21 @@ impl Parser<Member> for Setlike {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, readonly) = map(
-            opt(delimited(multispace0, tag("readonly"), multispace1)),
+            opt(delimited(
+                parser::multispace_or_comment0,
+                tag("readonly"),
+                parser::multispace_or_comment1,
+            )),
             |o| o.is_some(),
         )(input)?;
         let (input, r#type) = delimited(
-            preceded(multispace0, tag("setlike<")),
+            delimited(
+                parser::multispace_or_comment0,
+                tag("setlike<"),
+                parser::multispace_or_comment0,
+            ),
             Type::parse,
-            tag(">"),
+            preceded(parser::multispace_or_comment0, tag(">")),
         )(input)?;
 
         Ok((
