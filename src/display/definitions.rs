@@ -41,9 +41,9 @@ fn display_dictionary_members(members: &Vec<DictionaryMember>) -> String {
 fn display_enum_values(values: &Vec<String>) -> String {
     let mut result = String::new();
     values.iter().for_each(|value| {
-        result.push_str("\t");
+        result.push_str("\t\"");
         result.push_str(&value.to_string());
-        result.push_str("\n");
+        result.push_str("\"\n");
     });
 
     result
@@ -181,7 +181,7 @@ impl fmt::Display for Enumeration {
 
         write!(
             f,
-            "{}enum {} {{\n{}\n}};",
+            "{}enum {} {{\n{}}};",
             ext_attrs_str,
             self.identifier,
             display_enum_values(&self.values)
