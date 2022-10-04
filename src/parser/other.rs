@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while, take_while_m_n},
-    character::complete::{digit1, multispace1},
+    character::complete::{digit1, hex_digit1, multispace1},
     combinator::{map, map_res, not, opt, peek, recognize, success},
     multi::{many0, many1, separated_list0},
     number::complete::float,
@@ -96,6 +96,10 @@ impl Parser<DefaultValue> for DefaultValue {
                 }),
                 DefaultValue::Integer,
             ),
+            // Integer in hexadecimal format.
+            map(preceded(tag("0x"), hex_digit1), |s: &str| {
+                DefaultValue::Integer(i64::from_str_radix(s, 16).unwrap())
+            }),
             // NOTE: Change this? Don't think we need f64 for WebIDL though.
             map(float, |f| DefaultValue::Decimal(f as f64)),
             map(
