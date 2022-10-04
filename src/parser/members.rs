@@ -194,7 +194,7 @@ impl Parser<Member> for Constructor {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
         let (input, arguments) = preceded(
-            tag("constructor"),
+            preceded(parser::multispace_or_comment0, tag("constructor")),
             preceded(parser::multispace_or_comment0, Argument::parse),
         )(input)?;
 
@@ -212,7 +212,7 @@ impl Parser<Member> for Stringifer {
     fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) =
             map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
-        let (input, _) = tag("stringifier")(input)?;
+        let (input, _) = preceded(parser::multispace_or_comment0, tag("stringifier"))(input)?;
 
         Ok((input, Member::Stringifer(Stringifer { ext_attrs })))
     }
