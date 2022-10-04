@@ -63,7 +63,7 @@ impl fmt::Display for Interface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -82,7 +82,7 @@ impl fmt::Display for InterfaceMixin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -115,7 +115,7 @@ impl fmt::Display for CallbackInterface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -132,7 +132,7 @@ impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -151,7 +151,7 @@ impl fmt::Display for Dictionary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -170,7 +170,7 @@ impl fmt::Display for Enumeration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -187,7 +187,7 @@ impl fmt::Display for CallbackFunction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(
@@ -205,7 +205,7 @@ impl fmt::Display for Typedef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
 
         write!(

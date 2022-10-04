@@ -7,11 +7,12 @@ pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
     let number = ext_attrs.len();
     if number > 0 {
         result.push_str("[");
-        result.push_str(&ext_attrs.iter().fold(String::new(), |mut a, b| {
-            a.push_str(&b.to_string());
-            a.push_str(", ");
-            a
-        }));
+        ext_attrs.iter().enumerate().for_each(|(i, ext_attr)| {
+            result.push_str(&ext_attr.to_string());
+            if i + 1 < number {
+                result.push_str(", ")
+            }
+        });
         result.push_str("]");
     }
 
@@ -75,7 +76,7 @@ impl fmt::Display for DictionaryMember {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push_str("\n");
         }
         let default = if let Some(value) = &self.default {
             value.to_string()
