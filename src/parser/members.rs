@@ -88,6 +88,10 @@ impl Parser<ConstValue> for ConstValue {
             map(alt((tag("true"), tag("false"))), |s: &str| {
                 ConstValue::Boolean(s.parse::<bool>().unwrap())
             }),
+            // Integer in hexadecimal format.
+            map(preceded(tag("0x"), hex_digit1), |s: &str| {
+                ConstValue::Integer(i64::from_str_radix(s, 16).unwrap())
+            }),
             map(
                 // Make sure there is no "." at the end -> float.
                 map_res(terminated(digit1, not(peek(tag(".")))), |s: &str| {
@@ -95,10 +99,6 @@ impl Parser<ConstValue> for ConstValue {
                 }),
                 ConstValue::Integer,
             ),
-            // Integer in hexadecimal format.
-            map(preceded(tag("0x"), hex_digit1), |s: &str| {
-                ConstValue::Integer(i64::from_str_radix(s, 16).unwrap())
-            }),
             // NOTE: Change this? Don't think we need f64 for WebIDL though.
             map(float, |f| ConstValue::Decimal(f as f64)),
             map(tag("Infinity"), |_| ConstValue::Infinity),
