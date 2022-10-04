@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, Parser, RecordType, StandardType, Type, ExtendedAttribute, UnionType};
+use crate::{parser, ExtendedAttribute, Parser, RecordType, StandardType, Type, UnionType};
 
 impl Parser<Type> for Type {
     fn parse(input: &str) -> IResult<&str, Type> {
@@ -16,8 +16,7 @@ impl Parser<Type> for Type {
 }
 
 fn parse_union(input: &str) -> IResult<&str, Type> {
-    let (input, ext_attrs) =
-        map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
+    let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, types) = delimited(
         terminated(tag("("), parser::multispace_or_comment0),
         separated_list1(
@@ -37,8 +36,7 @@ fn parse_union(input: &str) -> IResult<&str, Type> {
 }
 
 fn parse_standard_type(input: &str) -> IResult<&str, Type> {
-    let (input, ext_attrs) =
-        map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
+    let (input, ext_attrs) = map(opt(ExtendedAttribute::parse), |o| o.unwrap_or_default())(input)?;
     let (input, primitive_type_with_space) = opt(alt((
         tag("unsigned short"),
         tag("unsigned long long"),
