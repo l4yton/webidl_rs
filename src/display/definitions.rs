@@ -19,22 +19,22 @@ fn display_inheritance(inheritance: &Option<String>) -> String {
 
 fn display_members(members: &[Member]) -> String {
     let mut result = String::new();
-    members.iter().for_each(|member| {
+    for member in members {
         result.push('\t');
         result.push_str(&member.to_string());
         result.push('\n');
-    });
+    }
 
     result
 }
 
 fn display_dictionary_members(members: &[DictionaryMember]) -> String {
     let mut result = String::new();
-    members.iter().for_each(|member| {
+    for member in members {
         result.push('\t');
         result.push_str(&member.to_string());
         result.push('\n');
-    });
+    }
 
     result
 }
@@ -42,7 +42,8 @@ fn display_dictionary_members(members: &[DictionaryMember]) -> String {
 fn display_enum_values(values: &Vec<String>) -> String {
     let mut result = String::new();
     let number = values.len();
-    values.iter().enumerate().for_each(|(i, value)| {
+
+    for (i, value) in values.iter().enumerate() {
         result.push('\t');
         result.push('"');
         result.push_str(&value.to_string());
@@ -51,7 +52,7 @@ fn display_enum_values(values: &Vec<String>) -> String {
             result.push(',');
         }
         result.push('\n');
-    });
+    }
 
     result
 }

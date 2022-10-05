@@ -5,15 +5,16 @@ use crate::{ternary, Argument, DefaultValue, DictionaryMember, ExtendedAttribute
 pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
     let mut result = String::new();
     let number = ext_attrs.len();
+
     if number > 0 {
         result.push('[');
-        ext_attrs.iter().enumerate().for_each(|(i, ext_attr)| {
+        for (i, ext_attr) in ext_attrs.iter().enumerate() {
             result.push_str(&ext_attr.to_string());
             if i + 1 < number {
                 result.push(',');
                 result.push(' ');
             }
-        });
+        }
         result.push(']');
     }
 
@@ -23,13 +24,14 @@ pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
 pub(crate) fn display_arguments(arguments: &Vec<Argument>) -> String {
     let mut result = String::new();
     let number = arguments.len();
-    arguments.iter().enumerate().for_each(|(i, argument)| {
+
+    for (i, argument) in arguments.iter().enumerate() {
         result.push_str(&argument.to_string());
         if i + 1 < number {
             result.push(',');
             result.push(' ');
         }
-    });
+    }
 
     result
 }

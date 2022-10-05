@@ -35,12 +35,13 @@ impl fmt::Display for UnionType {
 
         let number = self.types.len();
         assert!(number > 1, "Found union with less than two types");
-        self.types.iter().enumerate().for_each(|(i, r#type)| {
+
+        for (i, r#type) in self.types.iter().enumerate() {
             result.push_str(&r#type.to_string());
             if i + 1 < number {
                 result.push_str(" or ");
             }
-        });
+        }
 
         write!(
             f,
