@@ -30,7 +30,7 @@ impl fmt::Display for UnionType {
 
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         let number = self.types.len();
@@ -50,7 +50,7 @@ impl fmt::Display for StandardType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(

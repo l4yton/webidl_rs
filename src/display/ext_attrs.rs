@@ -25,8 +25,12 @@ impl fmt::Display for ExtAttrValue {
                 display::display_arguments(&named_args_list.arguments)
             ),
             ExtAttrValue::Identifier(identifier) => {
-                // Wrap the idenitifer in quotes if it has a newline.
-                if identifier.contains("\n") {
+                // Wrap the idenitifer in quotes if doesn't match the identifier regex.
+                // NOTE: The check isn't 100% accurate, but suffices for now.
+                if !identifier
+                    .chars()
+                    .all(|s| s.is_ascii_alphanumeric() || s == '_' || s == '-')
+                {
                     return write!(f, "=\"{}\"", identifier);
                 }
 

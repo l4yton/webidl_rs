@@ -6,14 +6,15 @@ pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
     let mut result = String::new();
     let number = ext_attrs.len();
     if number > 0 {
-        result.push_str("[");
+        result.push('[');
         ext_attrs.iter().enumerate().for_each(|(i, ext_attr)| {
             result.push_str(&ext_attr.to_string());
             if i + 1 < number {
-                result.push_str(", ")
+                result.push(',');
+                result.push(' ');
             }
         });
-        result.push_str("]");
+        result.push(']');
     }
 
     result
@@ -25,7 +26,8 @@ pub(crate) fn display_arguments(arguments: &Vec<Argument>) -> String {
     arguments.iter().enumerate().for_each(|(i, argument)| {
         result.push_str(&argument.to_string());
         if i + 1 < number {
-            result.push_str(", ");
+            result.push(',');
+            result.push(' ');
         }
     });
 
@@ -36,7 +38,7 @@ impl fmt::Display for Argument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
         let default = if let Some(value) = &self.default {
             value.to_string()
@@ -81,7 +83,7 @@ impl fmt::Display for DictionaryMember {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push(' ');
         }
         let default = if let Some(value) = &self.default {
             value.to_string()

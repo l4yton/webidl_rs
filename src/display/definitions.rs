@@ -8,31 +8,32 @@ use crate::{
 fn display_inheritance(inheritance: &Option<String>) -> String {
     let mut result = String::new();
     if let Some(inheritance) = inheritance {
-        result.push_str(":");
+        result.push(':');
+        result.push(' ');
         result.push_str(inheritance);
-        result.push_str(" ");
+        result.push(' ');
     }
 
     result
 }
 
-fn display_members(members: &Vec<Member>) -> String {
+fn display_members(members: &[Member]) -> String {
     let mut result = String::new();
     members.iter().for_each(|member| {
-        result.push_str("\t");
+        result.push('\t');
         result.push_str(&member.to_string());
-        result.push_str("\n");
+        result.push('\n');
     });
 
     result
 }
 
-fn display_dictionary_members(members: &Vec<DictionaryMember>) -> String {
+fn display_dictionary_members(members: &[DictionaryMember]) -> String {
     let mut result = String::new();
     members.iter().for_each(|member| {
-        result.push_str("\t");
+        result.push('\t');
         result.push_str(&member.to_string());
-        result.push_str("\n");
+        result.push('\n');
     });
 
     result
@@ -42,13 +43,14 @@ fn display_enum_values(values: &Vec<String>) -> String {
     let mut result = String::new();
     let number = values.len();
     values.iter().enumerate().for_each(|(i, value)| {
-        result.push_str("\t\"");
+        result.push('\t');
+        result.push('"');
         result.push_str(&value.to_string());
-        result.push_str("\"");
+        result.push('"');
         if i + 1 < number {
-            result.push_str(",");
+            result.push(',');
         }
-        result.push_str("\n");
+        result.push('\n');
     });
 
     result
@@ -74,7 +76,7 @@ impl fmt::Display for Interface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -93,12 +95,12 @@ impl fmt::Display for InterfaceMixin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
             f,
-            "{}{}interface {} {{\n{}}};",
+            "{}{}interface mixin {} {{\n{}}};",
             ext_attrs_str,
             ternary!(self.partial, "partial ", ""),
             self.identifier,
@@ -111,7 +113,7 @@ impl fmt::Display for Includes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(
@@ -126,7 +128,7 @@ impl fmt::Display for CallbackInterface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -143,7 +145,7 @@ impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -162,7 +164,7 @@ impl fmt::Display for Dictionary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -181,7 +183,7 @@ impl fmt::Display for Enumeration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -198,7 +200,7 @@ impl fmt::Display for CallbackFunction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(
@@ -216,7 +218,7 @@ impl fmt::Display for Typedef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str("\n");
+            ext_attrs_str.push('\n');
         }
 
         write!(

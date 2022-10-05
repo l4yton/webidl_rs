@@ -24,7 +24,7 @@ impl fmt::Display for Constant {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(
@@ -52,7 +52,7 @@ impl fmt::Display for Attribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
         let special_str = if let Some(special) = &self.special {
             match special {
@@ -80,7 +80,7 @@ impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
         let special_str = if let Some(special) = &self.special {
             match special {
@@ -109,7 +109,7 @@ impl fmt::Display for Constructor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(
@@ -125,7 +125,7 @@ impl fmt::Display for Stringifer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(f, "{}stringifier;", ext_attrs_str)
@@ -136,7 +136,7 @@ impl fmt::Display for Iterable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         if let Some(key_type) = &self.key_type {
@@ -164,12 +164,12 @@ impl fmt::Display for Maplike {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(
             f,
-            "{}{}maplike<{}, {}>",
+            "{}{}maplike<{}, {}>;",
             ext_attrs_str,
             ternary!(self.readonly, "readonly ", ""),
             self.key_type,
@@ -182,12 +182,12 @@ impl fmt::Display for Setlike {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
         if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push_str(" ");
+            ext_attrs_str.push(' ');
         }
 
         write!(
             f,
-            "{}{}setlike<{}>",
+            "{}{}setlike<{}>;",
             ext_attrs_str,
             ternary!(self.readonly, "readonly ", ""),
             self.r#type,

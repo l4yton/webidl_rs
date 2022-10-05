@@ -52,7 +52,7 @@ pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
     )(input)
 }
 
-pub fn to_string(definitions: &Vec<Definition>) -> String {
+pub fn to_string(definitions: &[Definition]) -> String {
     definitions.iter().fold(String::new(), |mut a, b| {
         a.push_str(&b.to_string());
         a.push_str("\n\n");
