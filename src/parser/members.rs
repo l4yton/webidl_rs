@@ -108,7 +108,6 @@ impl Parser<ConstValue> for ConstValue {
 impl Parser<Member> for Attribute {
     fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
-        let (input, readonly) = parse_check_is_readonly(input)?;
         let (input, special) = opt(delimited(
             parser::multispace_or_comment0,
             alt((
@@ -118,6 +117,7 @@ impl Parser<Member> for Attribute {
             )),
             parser::multispace_or_comment1,
         ))(input)?;
+        let (input, readonly) = parse_check_is_readonly(input)?;
         let (input, r#type) = parse_member_type(input, "attribute")?;
         let (input, identifier) = map(parser::parse_identifier, |s| s.to_string())(input)?;
 
@@ -154,9 +154,19 @@ impl Parser<Member> for Operation {
             Type::parse,
             parser::multispace_or_comment1,
         )(input)?;
-        let (input, identifier) = map(parser::parse_identifier, |s| s.to_string())(input)?;
+        // Special operations may not have an identifier.
+        let (input, identifier) =
+            map(opt(map(parser::parse_identifier, |s| s.to_string())), |o| {
+                o.unwrap_or_default()
+            })(input)?;
         let (input, arguments) =
             preceded(parser::multispace_or_comment0, parser::parse_arguments)(input)?;
+
+        // TODO: return error instead..
+        assert!(
+            !identifier.is_empty() || special.is_some(),
+            "Found regualr operation with no identifier"
+        );
 
         Ok((
             input,

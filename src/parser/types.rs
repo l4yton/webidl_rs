@@ -125,11 +125,19 @@ impl Parser<UnionType> for UnionType {
             ),
             preceded(parser::multispace_or_comment0, tag(")")),
         )(input)?;
+        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
-        // Change this to simply return an error.
+        // TODO; return error instead.
         assert!(types.len() > 1, "Found union with only a single type");
 
-        Ok((input, UnionType { ext_attrs, types }))
+        Ok((
+            input,
+            UnionType {
+                ext_attrs,
+                types,
+                nullable,
+            },
+        ))
     }
 }
 

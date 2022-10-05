@@ -17,6 +17,7 @@ pub enum Type {
 pub struct UnionType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub types: Vec<Type>,
+    pub nullable: bool,
 }
 
 #[derive(Debug, Clone)]

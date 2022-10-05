@@ -42,7 +42,13 @@ impl fmt::Display for UnionType {
             }
         });
 
-        write!(f, "{}({})", ext_attrs_str, result)
+        write!(
+            f,
+            "{}({}){}",
+            ext_attrs_str,
+            result,
+            ternary!(self.nullable, "?", "")
+        )
     }
 }
 
