@@ -36,7 +36,7 @@ fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
 
     Ok((
         input,
-        ExtAttrValue::IdentifierList(identifiers.iter().map(|s| s.to_string()).collect()),
+        ExtAttrValue::IdentifierList(identifiers.iter().map(|s| (*s).to_string()).collect()),
     ))
 }
 

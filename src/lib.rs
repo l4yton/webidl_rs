@@ -6,9 +6,10 @@ mod types;
 use nom::{
     bytes::complete::tag,
     combinator::eof,
+    error::Error,
     multi::separated_list0,
     sequence::{delimited, terminated},
-    IResult,
+    Err, IResult,
 };
 
 pub use members::*;
@@ -30,8 +31,8 @@ pub trait Parser<T> {
     fn parse(input: &str) -> IResult<&str, T>;
 }
 
-pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
-    terminated(
+pub fn parse_from_string(input: &str) -> Result<Vec<Definition>, Err<Error<String>>> {
+    let (_, definitions) = terminated(
         delimited(
             parser::multispace_or_comment0,
             separated_list0(
@@ -50,14 +51,24 @@ pub fn parse(input: &str) -> IResult<&str, Vec<Definition>> {
         ),
         eof,
     )(input)
+    .map_err(|e| e.to_owned())?;
+
+    Ok(definitions)
 }
 
-pub fn to_string(definitions: &[Definition]) -> String {
-    definitions.iter().fold(String::new(), |mut a, b| {
-        a.push_str(&b.to_string());
-        a.push_str("\n\n");
-        a
-    })
+pub fn definitions_to_string(definitions: &[Definition]) -> String {
+    let mut string = String::new();
+    let number = definitions.len();
+
+    for (i, definition) in definitions.iter().enumerate() {
+        string.push_str(&definition.to_string());
+        string.push('\n');
+        if i + 1 < number {
+            string.push('\n');
+        }
+    }
+
+    string
 }
 
 #[derive(Debug, Clone)]

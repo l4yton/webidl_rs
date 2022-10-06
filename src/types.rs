@@ -30,6 +30,45 @@ pub struct RecordType {
 #[derive(Debug, Clone)]
 pub struct StandardType {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub name: String,
+    pub name: StandardTypeName,
     pub nullable: bool,
+}
+
+#[derive(Debug, Clone)]
+pub enum StandardTypeName {
+    Identifier(String),
+
+    Any,
+    Undefined,
+    Boolean,
+    Byte,
+    Octet,
+    Short,
+    UnsignedShort,
+    Long,
+    UnsignedLong,
+    LongLong,
+    UnsignedLongLong,
+    Float,
+    UnrestrictedFloat,
+    Double,
+    UnrestrictedDouble,
+    Bigint,
+    DOMString,
+    ByteString,
+    USVString,
+    Object,
+    Symbol,
+    ArrayBuffer,
+    Int8Array,
+    Int16Array,
+    Int32Array,
+    Uint8Array,
+    Uint16Array,
+    Uint32Array,
+    Uint8ClampedArray,
+    BigInt64Array,
+    BigUint64Array,
+    Float32Array,
+    Float64Array,
 }

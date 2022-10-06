@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{display, ternary, RecordType, StandardType, Type, UnionType};
+use crate::{display, ternary, RecordType, StandardType, StandardTypeName, Type, UnionType};
 
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -67,5 +67,47 @@ impl fmt::Display for StandardType {
             self.name,
             ternary!(self.nullable, "?", "")
         )
+    }
+}
+
+impl fmt::Display for StandardTypeName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            StandardTypeName::Identifier(identifier) => write!(f, "{}", identifier),
+
+            StandardTypeName::Any => write!(f, "any"),
+            StandardTypeName::Undefined => write!(f, "undefined"),
+            StandardTypeName::Boolean => write!(f, "boolean"),
+            StandardTypeName::Byte => write!(f, "byte"),
+            StandardTypeName::Octet => write!(f, "octet"),
+            StandardTypeName::Short => write!(f, "short"),
+            StandardTypeName::UnsignedShort => write!(f, "unsigned short"),
+            StandardTypeName::Long => write!(f, "long"),
+            StandardTypeName::UnsignedLong => write!(f, "unsigned long"),
+            StandardTypeName::LongLong => write!(f, "long long"),
+            StandardTypeName::UnsignedLongLong => write!(f, "unsigned long long"),
+            StandardTypeName::Float => write!(f, "float"),
+            StandardTypeName::UnrestrictedFloat => write!(f, "unrestricted float"),
+            StandardTypeName::Double => write!(f, "double"),
+            StandardTypeName::UnrestrictedDouble => write!(f, "unrestricted double"),
+            StandardTypeName::Bigint => write!(f, "bigint"),
+            StandardTypeName::DOMString => write!(f, "DOMString"),
+            StandardTypeName::ByteString => write!(f, "ByteString"),
+            StandardTypeName::USVString => write!(f, "USVString"),
+            StandardTypeName::Object => write!(f, "object"),
+            StandardTypeName::Symbol => write!(f, "symbol"),
+            StandardTypeName::ArrayBuffer => write!(f, "ArrayBuffer"),
+            StandardTypeName::Int8Array => write!(f, "Int8Array"),
+            StandardTypeName::Int16Array => write!(f, "Int16Array"),
+            StandardTypeName::Int32Array => write!(f, "Int32Array"),
+            StandardTypeName::Uint8Array => write!(f, "Uint8Array"),
+            StandardTypeName::Uint16Array => write!(f, "Uint16Array"),
+            StandardTypeName::Uint32Array => write!(f, "Uint32Array"),
+            StandardTypeName::Uint8ClampedArray => write!(f, "Uint8ClampedArray"),
+            StandardTypeName::BigInt64Array => write!(f, "BigInt64Array"),
+            StandardTypeName::BigUint64Array => write!(f, "BigUint64Array"),
+            StandardTypeName::Float32Array => write!(f, "Float32Array"),
+            StandardTypeName::Float64Array => write!(f, "Float64Array"),
+        }
     }
 }
