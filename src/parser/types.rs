@@ -7,7 +7,9 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, Parser, RecordType, StandardType, StandardTypeName, Type, UnionType};
+use crate::{
+    parser, Parser, RecordType, RecordTypeKey, StandardType, StandardTypeName, Type, UnionType,
+};
 
 fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, Type> {
     delimited(
@@ -47,7 +49,11 @@ fn parse_record(input: &str) -> IResult<&str, Type> {
         separated_pair(
             delimited(
                 parser::multispace_or_comment0,
-                Type::parse,
+                alt((
+                    map(tag("DOMString"), |_| RecordTypeKey::DOMString),
+                    map(tag("USVString"), |_| RecordTypeKey::USVString),
+                    map(tag("ByteString"), |_| RecordTypeKey::ByteString),
+                )),
                 parser::multispace_or_comment0,
             ),
             tag(","),
@@ -63,7 +69,7 @@ fn parse_record(input: &str) -> IResult<&str, Type> {
     Ok((
         input,
         Type::Record(RecordType {
-            key: Box::new(key),
+            key,
             value: Box::new(value),
         }),
     ))

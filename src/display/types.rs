@@ -1,6 +1,8 @@
 use std::fmt;
 
-use crate::{display, ternary, RecordType, StandardType, StandardTypeName, Type, UnionType};
+use crate::{
+    display, ternary, RecordType, RecordTypeKey, StandardType, StandardTypeName, Type, UnionType,
+};
 
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -21,6 +23,16 @@ impl fmt::Display for Type {
 impl fmt::Display for RecordType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "record<{}, {}>", self.key, self.value)
+    }
+}
+
+impl fmt::Display for RecordTypeKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            RecordTypeKey::DOMString => write!(f, "DOMString"),
+            RecordTypeKey::USVString => write!(f, "USVString"),
+            RecordTypeKey::ByteString => write!(f, "ByteString"),
+        }
     }
 }
 

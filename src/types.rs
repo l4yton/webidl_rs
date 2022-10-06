@@ -22,9 +22,15 @@ pub struct UnionType {
 
 #[derive(Debug, Clone)]
 pub struct RecordType {
-    // Can only be "DOMString", "USVString" or "ByteString".
-    pub key: Box<Type>,
+    pub key: RecordTypeKey,
     pub value: Box<Type>,
+}
+
+#[derive(Debug, Clone)]
+pub enum RecordTypeKey {
+    DOMString,
+    USVString,
+    ByteString,
 }
 
 #[derive(Debug, Clone)]
