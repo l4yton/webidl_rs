@@ -222,7 +222,15 @@ impl Parser<Definition> for Enumeration {
                 ),
                 parser::parse_quoted_string,
             ),
-            preceded(parser::multispace_or_comment0, tag("}")),
+            preceded(
+                delimited(
+                    parser::multispace_or_comment0,
+                    // In case the last value has a comma at the end.
+                    opt(tag(",")),
+                    parser::multispace_or_comment0,
+                ),
+                tag("}"),
+            ),
         )(input)?;
 
         Ok((
