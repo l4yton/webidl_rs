@@ -84,6 +84,22 @@ pub enum Definition {
     Typedef(Typedef),
 }
 
+impl Definition {
+    pub fn get_identifier(&self) -> Option<&str> {
+        match self {
+            Definition::Interface(interface) => Some(&interface.identifier),
+            Definition::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
+            Definition::Includes(_) => None,
+            Definition::CallbackInterface(cb_interface) => Some(&cb_interface.identifier),
+            Definition::Namespace(namespace) => Some(&namespace.identifier),
+            Definition::Dictionary(dictionary) => Some(&dictionary.identifier),
+            Definition::Enumeration(r#enum) => Some(&r#enum.identifier),
+            Definition::CallbackFunction(cb_function) => Some(&cb_function.identifier),
+            Definition::Typedef(typedef) => Some(&typedef.identifier),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Interface {
     pub ext_attrs: Vec<ExtendedAttribute>,

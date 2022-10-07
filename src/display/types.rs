@@ -8,13 +8,13 @@ use crate::{
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Type::Sequence(sequence) => write!(f, "sequence<{}>", sequence),
+            Type::Sequence(sequence) => write!(f, "{}", sequence),
             Type::Record(record) => write!(f, "{}", record),
-            Type::Promise(promise) => write!(f, "Promise<{}>", promise),
+            Type::Promise(promise) => write!(f, "{}", promise),
             Type::Union(r#union) => write!(f, "{}", r#union),
-            Type::FrozenArray(frozen_array) => write!(f, "FrozenArray<{}>", frozen_array),
+            Type::FrozenArray(frozen_array) => write!(f, "{}", frozen_array),
             Type::ObservableArray(observable_array) => {
-                write!(f, "ObservableArray<{}>", observable_array)
+                write!(f, "{}", observable_array)
             }
             Type::Standard(r#type) => write!(f, "{}", r#type),
         }
