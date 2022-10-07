@@ -1,7 +1,8 @@
 use std::fmt;
 
 use crate::{
-    display, ternary, RecordType, RecordTypeKey, StandardType, StandardTypeName, Type, UnionType,
+    display, ternary, FrozenArrayType, ObservableArrayType, PromiseType, RecordType, RecordTypeKey,
+    SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
 impl fmt::Display for Type {
@@ -17,6 +18,17 @@ impl fmt::Display for Type {
             }
             Type::Standard(r#type) => write!(f, "{}", r#type),
         }
+    }
+}
+
+impl fmt::Display for SequenceType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "sequence<{}>{}",
+            self.r#type,
+            ternary!(self.nullable, "?", "")
+        )
     }
 }
 
@@ -60,6 +72,39 @@ impl fmt::Display for UnionType {
             "{}({}){}",
             ext_attrs_str,
             result,
+            ternary!(self.nullable, "?", "")
+        )
+    }
+}
+
+impl fmt::Display for PromiseType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Promise<{}>{}",
+            self.r#type,
+            ternary!(self.nullable, "?", "")
+        )
+    }
+}
+
+impl fmt::Display for FrozenArrayType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "FrozenArray<{}>{}",
+            self.r#type,
+            ternary!(self.nullable, "?", "")
+        )
+    }
+}
+
+impl fmt::Display for ObservableArrayType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "ObservableArray<{}>{}",
+            self.r#type,
             ternary!(self.nullable, "?", "")
         )
     }

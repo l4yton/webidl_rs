@@ -120,7 +120,9 @@ impl Parser<Argument> for Argument {
             |o| o.is_some(),
         )(input)?;
         let (input, r#type) = preceded(multispace_or_comment0, Type::parse)(input)?;
-        let (input, variadic) = map(opt(tag("...")), |o| o.is_some())(input)?;
+        let (input, variadic) = map(opt(preceded(multispace_or_comment0, tag("..."))), |o| {
+            o.is_some()
+        })(input)?;
         let (input, identifier) = preceded(multispace_or_comment1, parse_identifier)(input)?;
         let (input, default) = opt(preceded(
             delimited(multispace_or_comment0, tag("="), multispace_or_comment0),

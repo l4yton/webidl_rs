@@ -1,14 +1,15 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    combinator::{map, opt},
+    bytes::complete::{tag, take_while_m_n},
+    combinator::{map, not, opt, peek},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };
 
 use crate::{
-    parser, Parser, RecordType, RecordTypeKey, StandardType, StandardTypeName, Type, UnionType,
+    parser, FrozenArrayType, ObservableArrayType, Parser, PromiseType, RecordType, RecordTypeKey,
+    SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
 fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, Type> {
@@ -23,68 +24,67 @@ fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, 
     )(input)
 }
 
-fn parse_sequence(input: &str) -> IResult<&str, Type> {
-    let (input, r#type) = parse_parameterized_type(input, "sequence")?;
-    Ok((input, Type::Sequence(Box::new(r#type))))
-}
-
-fn parse_promise(input: &str) -> IResult<&str, Type> {
-    let (input, r#type) = parse_parameterized_type(input, "Promise")?;
-    Ok((input, Type::Promise(Box::new(r#type))))
-}
-
-fn parse_frozen_array(input: &str) -> IResult<&str, Type> {
-    let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
-    Ok((input, Type::FrozenArray(Box::new(r#type))))
-}
-
-fn parse_observable_array(input: &str) -> IResult<&str, Type> {
-    let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
-    Ok((input, Type::ObservableArray(Box::new(r#type))))
-}
-
-fn parse_record(input: &str) -> IResult<&str, Type> {
-    let (input, (key, value)) = delimited(
-        delimited(tag("record"), parser::multispace_or_comment0, tag(">")),
-        separated_pair(
-            delimited(
-                parser::multispace_or_comment0,
-                alt((
-                    map(tag("DOMString"), |_| RecordTypeKey::DOMString),
-                    map(tag("USVString"), |_| RecordTypeKey::USVString),
-                    map(tag("ByteString"), |_| RecordTypeKey::ByteString),
-                )),
-                parser::multispace_or_comment0,
-            ),
-            tag(","),
-            delimited(
-                parser::multispace_or_comment0,
-                Type::parse,
-                parser::multispace_or_comment0,
-            ),
-        ),
-        tag(">"),
-    )(input)?;
-
-    Ok((
-        input,
-        Type::Record(RecordType {
-            key,
-            value: Box::new(value),
-        }),
-    ))
-}
 impl Parser<Type> for Type {
     fn parse(input: &str) -> IResult<&str, Type> {
         alt((
-            parse_sequence,
-            parse_record,
-            parse_promise,
-            parse_frozen_array,
-            parse_observable_array,
+            map(SequenceType::parse, Type::Sequence),
+            map(RecordType::parse, Type::Record),
+            map(PromiseType::parse, Type::Promise),
+            map(FrozenArrayType::parse, Type::FrozenArray),
+            map(ObservableArrayType::parse, Type::ObservableArray),
             map(UnionType::parse, Type::Union),
             map(StandardType::parse, Type::Standard),
         ))(input)
+    }
+}
+
+impl Parser<SequenceType> for SequenceType {
+    fn parse(input: &str) -> IResult<&str, SequenceType> {
+        let (input, r#type) = parse_parameterized_type(input, "sequence")?;
+        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+
+        Ok((
+            input,
+            SequenceType {
+                r#type: Box::new(r#type),
+                nullable,
+            },
+        ))
+    }
+}
+
+impl Parser<RecordType> for RecordType {
+    fn parse(input: &str) -> IResult<&str, RecordType> {
+        // TODO: Clean this up.
+        let (input, (key, value)) = delimited(
+            delimited(tag("record"), parser::multispace_or_comment0, tag("<")),
+            separated_pair(
+                delimited(
+                    parser::multispace_or_comment0,
+                    alt((
+                        map(tag("DOMString"), |_| RecordTypeKey::DOMString),
+                        map(tag("USVString"), |_| RecordTypeKey::USVString),
+                        map(tag("ByteString"), |_| RecordTypeKey::ByteString),
+                    )),
+                    parser::multispace_or_comment0,
+                ),
+                tag(","),
+                delimited(
+                    parser::multispace_or_comment0,
+                    Type::parse,
+                    parser::multispace_or_comment0,
+                ),
+            ),
+            tag(">"),
+        )(input)?;
+
+        Ok((
+            input,
+            RecordType {
+                key,
+                value: Box::new(value),
+            },
+        ))
     }
 }
 
@@ -123,6 +123,51 @@ impl Parser<UnionType> for UnionType {
     }
 }
 
+impl Parser<PromiseType> for PromiseType {
+    fn parse(input: &str) -> IResult<&str, PromiseType> {
+        let (input, r#type) = parse_parameterized_type(input, "Promise")?;
+        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+
+        Ok((
+            input,
+            PromiseType {
+                r#type: Box::new(r#type),
+                nullable,
+            },
+        ))
+    }
+}
+
+impl Parser<FrozenArrayType> for FrozenArrayType {
+    fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
+        let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
+        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+
+        Ok((
+            input,
+            FrozenArrayType {
+                r#type: Box::new(r#type),
+                nullable,
+            },
+        ))
+    }
+}
+
+impl Parser<ObservableArrayType> for ObservableArrayType {
+    fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
+        let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
+        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+
+        Ok((
+            input,
+            ObservableArrayType {
+                r#type: Box::new(r#type),
+                nullable,
+            },
+        ))
+    }
+}
+
 impl Parser<StandardType> for StandardType {
     fn parse(input: &str) -> IResult<&str, StandardType> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
@@ -143,17 +188,23 @@ impl Parser<StandardType> for StandardType {
 
 impl Parser<StandardTypeName> for StandardTypeName {
     fn parse(input: &str) -> IResult<&str, StandardTypeName> {
-        let (input, primitive_type_with_space) = preceded(
+        let (input, primitive_type_with_space) = opt(delimited(
             parser::multispace_or_comment0,
-            opt(alt((
+            alt((
                 tag("unsigned short"),
                 tag("unsigned long long"),
                 tag("unsigned long"),
                 tag("long long"),
                 tag("unrestricted float"),
                 tag("unrestricted double"),
-            ))),
-        )(input)?;
+            )),
+            // A bit hacky, but there shouldn't be any other character that may be part of the
+            // identifier. Example:
+            // `long longMember` - "long" is the actual type and "longMember" the identifier.
+            peek(not(take_while_m_n(1, 1, |s: char| {
+                s.is_ascii_alphanumeric() || s == '_' || s == '-'
+            }))),
+        ))(input)?;
 
         if let Some(name) = primitive_type_with_space {
             match name {
@@ -173,7 +224,8 @@ impl Parser<StandardTypeName> for StandardTypeName {
         let (input, name) = parser::parse_identifier(input)?;
         match name {
             "any" => Ok((input, StandardTypeName::Any)),
-            "undefined" => Ok((input, StandardTypeName::Undefined)),
+            // NOTE: Interpreting "void" as "undefined", see: https://github.com/whatwg/webidl/issues/60
+            "undefined" | "void" => Ok((input, StandardTypeName::Undefined)),
             "boolean" => Ok((input, StandardTypeName::Boolean)),
             "byte" => Ok((input, StandardTypeName::Byte)),
             "octet" => Ok((input, StandardTypeName::Octet)),

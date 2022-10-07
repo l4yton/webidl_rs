@@ -2,13 +2,19 @@ use crate::ExtendedAttribute;
 
 #[derive(Debug, Clone)]
 pub enum Type {
-    Sequence(Box<Type>),
+    Sequence(SequenceType),
     Record(RecordType),
-    Promise(Box<Type>),
+    Promise(PromiseType),
     Union(UnionType),
-    FrozenArray(Box<Type>),
-    ObservableArray(Box<Type>),
+    FrozenArray(FrozenArrayType),
+    ObservableArray(ObservableArrayType),
     Standard(StandardType),
+}
+
+#[derive(Debug, Clone)]
+pub struct SequenceType {
+    pub r#type: Box<Type>,
+    pub nullable: bool,
 }
 
 // AFAIU, only Union and StandardType can have extended attributes.
@@ -31,6 +37,24 @@ pub enum RecordTypeKey {
     DOMString,
     USVString,
     ByteString,
+}
+
+#[derive(Debug, Clone)]
+pub struct PromiseType {
+    pub r#type: Box<Type>,
+    pub nullable: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct FrozenArrayType {
+    pub r#type: Box<Type>,
+    pub nullable: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ObservableArrayType {
+    pub r#type: Box<Type>,
+    pub nullable: bool,
 }
 
 #[derive(Debug, Clone)]

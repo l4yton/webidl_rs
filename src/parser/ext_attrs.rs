@@ -29,15 +29,16 @@ fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
                 tag(","),
                 parser::multispace_or_comment0,
             ),
-            parser::parse_identifier,
+            alt((
+                map(parser::parse_identifier, |s| s.to_string()),
+                // Identifiers in a list may also be in quotes.
+                parser::parse_quoted_string,
+            )),
         ),
         preceded(parser::multispace_or_comment0, tag(")")),
     )(input)?;
 
-    Ok((
-        input,
-        ExtAttrValue::IdentifierList(identifiers.iter().map(|s| (*s).to_string()).collect()),
-    ))
+    Ok((input, ExtAttrValue::IdentifierList(identifiers)))
 }
 
 fn parse_ext_attr_wildcard(input: &str) -> IResult<&str, ExtAttrValue> {

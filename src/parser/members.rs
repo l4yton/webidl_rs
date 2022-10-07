@@ -4,13 +4,13 @@ use nom::{
     character::complete::{digit1, hex_digit1},
     combinator::{map, map_res, not, opt, peek},
     number::complete::float,
-    sequence::{delimited, pair, preceded, separated_pair, terminated},
+    sequence::{delimited, preceded, separated_pair, terminated},
     IResult,
 };
 
 use crate::{
-    parser, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
-    OpSpecial, Operation, Parser, Setlike, Stringifer, Type,
+    parser, ternary, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike,
+    Member, OpSpecial, Operation, Parser, Setlike, Stringifer, Type,
 };
 
 fn parse_member_type<'a>(input: &'a str, member_tag: &str) -> IResult<&'a str, Type> {
@@ -43,8 +43,8 @@ impl Parser<Member> for Member {
         alt((
             Constant::parse,
             Attribute::parse,
-            Operation::parse,
             Constructor::parse,
+            Operation::parse,
             Stringifer::parse,
             Iterable::parse,
             Maplike::parse,
@@ -152,7 +152,14 @@ impl Parser<Member> for Operation {
         let (input, r#type) = delimited(
             parser::multispace_or_comment0,
             Type::parse,
-            parser::multispace_or_comment1,
+            // Special operations may have the arguments directly after the type and thus no
+            // space afterwards, for example:
+            // `getter CSSNumericValue(unsigned long index)`
+            ternary!(
+                special.is_some(),
+                parser::multispace_or_comment0,
+                parser::multispace_or_comment1
+            ),
         )(input)?;
         // Special operations may not have an identifier.
         let (input, identifier) =
@@ -162,10 +169,10 @@ impl Parser<Member> for Operation {
         let (input, arguments) =
             preceded(parser::multispace_or_comment0, parser::parse_arguments)(input)?;
 
-        // TODO: return error instead..
+        // TODO: return error instead.
         assert!(
             !identifier.is_empty() || special.is_some(),
-            "Found regualr operation with no identifier"
+            "Found regular operation with no identifier"
         );
 
         Ok((
@@ -219,22 +226,21 @@ impl Parser<Member> for Iterable {
             )),
             |o| o.is_some(),
         )(input)?;
+        // TODO: Clean this up.
         let (input, (value_type, key_type)) = delimited(
             delimited(
                 parser::multispace_or_comment0,
-                tag("iterable<"),
+                delimited(tag("iterable"), parser::multispace_or_comment0, tag("<")),
                 parser::multispace_or_comment0,
             ),
-            pair(
+            separated_pair(
                 Type::parse,
-                opt(preceded(
-                    delimited(
-                        parser::multispace_or_comment0,
-                        tag(","),
-                        parser::multispace_or_comment0,
-                    ),
-                    Type::parse,
+                opt(delimited(
+                    parser::multispace_or_comment0,
+                    tag(","),
+                    parser::multispace_or_comment0,
                 )),
+                opt(Type::parse),
             ),
             preceded(parser::multispace_or_comment0, tag(">")),
         )(input)?;
