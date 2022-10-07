@@ -68,8 +68,8 @@ impl fmt::Display for Attribute {
             f,
             "{}{}{}attribute {} {};",
             ext_attrs_str,
-            ternary!(self.readonly, "readonly ", ""),
             special_str,
+            ternary!(self.readonly, "readonly ", ""),
             self.r#type,
             self.identifier
         )

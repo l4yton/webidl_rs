@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{display, ExtAttrValue, ExtendedAttribute};
+use crate::{display, ternary, ExtAttrValue, ExtendedAttribute};
 
 impl fmt::Display for ExtendedAttribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -25,6 +25,10 @@ impl fmt::Display for ExtAttrValue {
                 display::display_arguments(&named_args_list.arguments)
             ),
             ExtAttrValue::Identifier(identifier) => {
+                if identifier.is_empty() {
+                    return write!(f, "=\"\"");
+                }
+
                 // Wrap the idenitifer in quotes if doesn't match the identifier regex.
                 // NOTE: The check isn't 100% accurate, but suffices for now.
                 if !identifier
@@ -37,7 +41,18 @@ impl fmt::Display for ExtAttrValue {
                 write!(f, "={}", identifier)
             }
             ExtAttrValue::IdentifierList(identifier_list) => {
-                write!(f, "=({})", identifier_list.join(", "))
+                let mut result = String::new();
+                let number = identifier_list.len();
+
+                for (i, identifier) in identifier_list.iter().enumerate() {
+                    result.push_str(ternary!(identifier.is_empty(), "\"\"", identifier));
+                    if i + 1 < number {
+                        result.push(',');
+                        result.push(' ');
+                    }
+                }
+
+                write!(f, "=({})", result)
             }
             ExtAttrValue::Wildcard => write!(f, "=*"),
         }
