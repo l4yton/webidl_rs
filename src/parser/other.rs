@@ -139,7 +139,7 @@ impl Parser<Argument> for Argument {
                 optional,
                 r#type,
                 variadic,
-                identifier: identifier.to_string(),
+                identifier,
                 default,
             },
         ))
@@ -204,7 +204,7 @@ impl Parser<DictionaryMember> for DictionaryMember {
                 ext_attrs,
                 required,
                 r#type,
-                identifier: identifier.to_string(),
+                identifier,
                 default,
             },
         ))
