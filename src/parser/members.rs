@@ -248,14 +248,14 @@ impl Parser<Member> for Iterable {
         ))(input)?;
 
         // iterable<key_type, value_type>
-        if let Some(key_type) = second_type {
+        if let Some(value_type) = second_type {
             return Ok((
                 input,
                 Member::Iterable(Iterable {
                     ext_attrs,
                     r#async,
                     key_type: Some(first_type),
-                    value_type: key_type,
+                    value_type,
                     arguments,
                 }),
             ));
