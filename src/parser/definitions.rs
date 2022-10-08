@@ -25,33 +25,27 @@ fn parse_check_is_partial(input: &str) -> IResult<&str, bool> {
 }
 
 fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<String>> {
-    map(
-        opt(preceded(
-            delimited(
-                parser::multispace_or_comment0,
-                tag(":"),
-                parser::multispace_or_comment0,
-            ),
-            parser::parse_identifier,
-        )),
-        |o| o.map(|s| s.to_string()),
-    )(input)
+    opt(preceded(
+        delimited(
+            parser::multispace_or_comment0,
+            tag(":"),
+            parser::multispace_or_comment0,
+        ),
+        parser::parse_identifier,
+    ))(input)
 }
 
 fn parse_definition_identifier<'a>(
     input: &'a str,
     definition_tag: &str,
 ) -> IResult<&'a str, String> {
-    map(
-        preceded(
-            delimited(
-                parser::multispace_or_comment0,
-                tag(definition_tag),
-                parser::multispace_or_comment1,
-            ),
-            parser::parse_identifier,
+    preceded(
+        delimited(
+            parser::multispace_or_comment0,
+            tag(definition_tag),
+            parser::multispace_or_comment1,
         ),
-        |s| s.to_string(),
+        parser::parse_identifier,
     )(input)
 }
 
@@ -116,17 +110,15 @@ impl Parser<Definition> for InterfaceMixin {
 impl Parser<Definition> for Includes {
     fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
-        let (input, (interface, mixin)) = map(
-            separated_pair(
-                preceded(parser::multispace_or_comment0, parser::parse_identifier),
-                delimited(
-                    parser::multispace_or_comment1,
-                    tag("includes"),
-                    parser::multispace_or_comment1,
-                ),
-                parser::parse_identifier,
+        let (input, _) = parser::multispace_or_comment0(input)?;
+        let (input, (interface, mixin)) = separated_pair(
+            parser::parse_identifier,
+            delimited(
+                parser::multispace_or_comment1,
+                tag("includes"),
+                parser::multispace_or_comment1,
             ),
-            |(s0, s1)| (s0.to_string(), s1.to_string()),
+            parser::parse_identifier,
         )(input)?;
 
         Ok((
@@ -208,29 +200,29 @@ impl Parser<Definition> for Enumeration {
     fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, identifier) = parse_definition_identifier(input, "enum")?;
-        let (input, values) = delimited(
+        let (input, _) = delimited(
+            parser::multispace_or_comment0,
+            tag("{"),
+            parser::multispace_or_comment0,
+        )(input)?;
+        let (input, values) = separated_list0(
             delimited(
                 parser::multispace_or_comment0,
-                tag("{"),
+                tag(","),
                 parser::multispace_or_comment0,
             ),
-            separated_list0(
-                delimited(
-                    parser::multispace_or_comment0,
-                    tag(","),
-                    parser::multispace_or_comment0,
-                ),
-                parser::parse_quoted_string,
-            ),
-            preceded(
-                delimited(
-                    parser::multispace_or_comment0,
-                    // In case the last value has a comma at the end.
-                    opt(tag(",")),
-                    parser::multispace_or_comment0,
-                ),
-                tag("}"),
-            ),
+            parser::parse_quoted_string,
+        )(input)?;
+        // In case the last value has a comma at the end.
+        let (input, _) = opt(delimited(
+            parser::multispace_or_comment0,
+            tag(","),
+            parser::multispace_or_comment0,
+        ))(input)?;
+        let (input, _) = delimited(
+            parser::multispace_or_comment0,
+            tag("}"),
+            parser::multispace_or_comment0,
         )(input)?;
 
         Ok((
@@ -238,7 +230,7 @@ impl Parser<Definition> for Enumeration {
             Definition::Enumeration(Enumeration {
                 ext_attrs,
                 identifier,
-                values: values.iter().map(|s| s.to_string()).collect(),
+                values,
             }),
         ))
     }
@@ -281,10 +273,8 @@ impl Parser<Definition> for Typedef {
             ),
             Type::parse,
         )(input)?;
-        let (input, identifier) = map(
-            preceded(parser::multispace_or_comment1, parser::parse_identifier),
-            |s| s.to_string(),
-        )(input)?;
+        let (input, identifier) =
+            preceded(parser::multispace_or_comment1, parser::parse_identifier)(input)?;
 
         Ok((
             input,

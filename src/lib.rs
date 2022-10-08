@@ -16,11 +16,11 @@ pub use members::*;
 pub use types::*;
 
 macro_rules! ternary {
-    ($c:expr, $v:expr, $v1:expr) => {
-        if $c {
-            $v
+    ($cond: expr, $a: expr, $b: expr) => {
+        if $cond {
+            $a
         } else {
-            $v1
+            $b
         }
     };
 }

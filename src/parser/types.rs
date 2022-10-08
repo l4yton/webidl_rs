@@ -55,27 +55,25 @@ impl Parser<SequenceType> for SequenceType {
 
 impl Parser<RecordType> for RecordType {
     fn parse(input: &str) -> IResult<&str, RecordType> {
-        // TODO: Clean this up.
         let (input, (key, value)) = delimited(
             delimited(tag("record"), parser::multispace_or_comment0, tag("<")),
             separated_pair(
-                delimited(
+                preceded(
                     parser::multispace_or_comment0,
                     alt((
                         map(tag("DOMString"), |_| RecordTypeKey::DOMString),
                         map(tag("USVString"), |_| RecordTypeKey::USVString),
                         map(tag("ByteString"), |_| RecordTypeKey::ByteString),
                     )),
-                    parser::multispace_or_comment0,
                 ),
-                tag(","),
                 delimited(
                     parser::multispace_or_comment0,
-                    Type::parse,
+                    tag(","),
                     parser::multispace_or_comment0,
                 ),
+                Type::parse,
             ),
-            tag(">"),
+            preceded(parser::multispace_or_comment0, tag(">")),
         )(input)?;
 
         Ok((
@@ -222,7 +220,7 @@ impl Parser<StandardTypeName> for StandardTypeName {
         }
 
         let (input, name) = parser::parse_identifier(input)?;
-        match name {
+        match &name as &str {
             "any" => Ok((input, StandardTypeName::Any)),
             // NOTE: Interpreting "void" as "undefined", see: https://github.com/whatwg/webidl/issues/60
             "undefined" | "void" => Ok((input, StandardTypeName::Undefined)),

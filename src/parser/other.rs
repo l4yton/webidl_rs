@@ -13,15 +13,18 @@ use nom::{
 use crate::{Argument, DefaultValue, DictionaryMember, ExtendedAttribute, Member, Parser, Type};
 
 // As definined in: https://webidl.spec.whatwg.org/#idl-grammar
-pub(crate) fn parse_identifier(input: &str) -> IResult<&str, &str> {
-    recognize(tuple((
-        // [_-]?
-        alt((tag("_"), tag("-"), success(""))),
-        // [A-Za-z]
-        take_while_m_n(1, 1, |s: char| s.is_ascii_alphabetic()),
-        // [0-9A-Z_a-z-]*
-        take_while(|s: char| s.is_ascii_alphanumeric() || s == '_' || s == '-'),
-    )))(input)
+pub(crate) fn parse_identifier(input: &str) -> IResult<&str, String> {
+    map(
+        recognize(tuple((
+            // [_-]?
+            alt((tag("_"), tag("-"), success(""))),
+            // [A-Za-z]
+            take_while_m_n(1, 1, |s: char| s.is_ascii_alphabetic()),
+            // [0-9A-Z_a-z-]*
+            take_while(|s: char| s.is_ascii_alphanumeric() || s == '_' || s == '-'),
+        ))),
+        |s| s.to_string(),
+    )(input)
 }
 
 pub(crate) fn multispace_or_comment0(input: &str) -> IResult<&str, Vec<&str>> {
