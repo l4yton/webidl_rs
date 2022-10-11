@@ -11,7 +11,7 @@ fn display_ext_attr_identifier(identifier: &str) -> String {
         return identifier.to_string();
     }
 
-    return format!("\"{}\"", identifier);
+    format!("\"{}\"", identifier)
 }
 
 impl fmt::Display for ExtendedAttribute {
