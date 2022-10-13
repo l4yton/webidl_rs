@@ -98,6 +98,16 @@ impl Definition {
             Definition::Typedef(typedef) => Some(&typedef.identifier),
         }
     }
+
+    pub fn is_partial(&self) -> bool {
+        match self {
+            Definition::Interface(interface) => interface.partial,
+            Definition::InterfaceMixin(interface_mixin) => interface_mixin.partial,
+            Definition::Namespace(namespace) => namespace.partial,
+            Definition::Dictionary(dictionary) => dictionary.partial,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
