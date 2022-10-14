@@ -151,11 +151,10 @@ impl fmt::Display for Namespace {
 
         write!(
             f,
-            "{}{}namespace {} {}{{\n{}}};",
+            "{}{}namespace {} {{\n{}}};",
             ext_attrs_str,
             ternary!(self.partial, "partial ", ""),
             self.identifier,
-            display_inheritance(&self.inheritance),
             display_members(&self.members),
         )
     }

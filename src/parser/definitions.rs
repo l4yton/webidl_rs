@@ -74,6 +74,13 @@ impl Parser<Definition> for Interface {
         let (input, members) =
             preceded(parser::multispace_or_comment0, parser::parse_members)(input)?;
 
+        // "A partial interface definition cannot specify that the interface inherits from another interface.
+        // Inheritance is to be specified on the original interface definition"
+        assert!(
+            !partial || partial && inheritance.is_none(),
+            "A partial interface shall not specify inheritance"
+        );
+
         Ok((
             input,
             Definition::Interface(Interface {
@@ -155,7 +162,6 @@ impl Parser<Definition> for Namespace {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, partial) = parse_check_is_partial(input)?;
         let (input, identifier) = parse_definition_identifier(input, "namespace")?;
-        let (input, inheritance) = parse_optional_inheritance(input)?;
         let (input, members) =
             preceded(parser::multispace_or_comment0, parser::parse_members)(input)?;
 
@@ -165,7 +171,6 @@ impl Parser<Definition> for Namespace {
                 ext_attrs,
                 partial,
                 identifier,
-                inheritance,
                 members,
             }),
         ))
@@ -182,6 +187,12 @@ impl Parser<Definition> for Dictionary {
             parser::multispace_or_comment0,
             parser::parse_dictionary_members,
         )(input)?;
+
+        // Same as with interfaces, partial dictionaries should not specify inheritance.
+        assert!(
+            !partial || partial && inheritance.is_none(),
+            "A partial dictionary shall not specify inheritance"
+        );
 
         Ok((
             input,

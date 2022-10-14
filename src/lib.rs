@@ -146,7 +146,6 @@ pub struct Namespace {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
     pub identifier: String,
-    pub inheritance: Option<String>,
     pub members: Vec<Member>,
 }
 
