@@ -34,6 +34,19 @@ impl Member {
             Member::Setlike(setlike) => &setlike.ext_attrs,
         }
     }
+
+    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
+        match self {
+            Member::Constant(constant) => &mut constant.ext_attrs,
+            Member::Attribute(attribute) => &mut attribute.ext_attrs,
+            Member::Operation(operation) => &mut operation.ext_attrs,
+            Member::Constructor(constructor) => &mut constructor.ext_attrs,
+            Member::Stringifer(stringifier) => &mut stringifier.ext_attrs,
+            Member::Iterable(iterable) => &mut iterable.ext_attrs,
+            Member::Maplike(maplike) => &mut maplike.ext_attrs,
+            Member::Setlike(setlike) => &mut setlike.ext_attrs,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

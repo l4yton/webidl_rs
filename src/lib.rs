@@ -113,6 +113,20 @@ impl Definition {
         }
     }
 
+    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
+        match self {
+            Definition::Interface(interface) => &mut interface.ext_attrs,
+            Definition::InterfaceMixin(interface_mixin) => &mut interface_mixin.ext_attrs,
+            Definition::Includes(includes) => &mut includes.ext_attrs,
+            Definition::CallbackInterface(cb_interface) => &mut cb_interface.ext_attrs,
+            Definition::Namespace(namespace) => &mut namespace.ext_attrs,
+            Definition::Dictionary(dictionary) => &mut dictionary.ext_attrs,
+            Definition::Enumeration(r#enum) => &mut r#enum.ext_attrs,
+            Definition::CallbackFunction(cb_function) => &mut cb_function.ext_attrs,
+            Definition::Typedef(typedef) => &mut typedef.ext_attrs,
+        }
+    }
+
     pub fn is_partial(&self) -> bool {
         match self {
             Definition::Interface(interface) => interface.partial,
