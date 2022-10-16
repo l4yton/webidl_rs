@@ -12,6 +12,30 @@ pub enum Member {
     Setlike(Setlike),
 }
 
+impl Member {
+    pub fn get_identifier(&self) -> Option<&str> {
+        match self {
+            Member::Constant(constant) => Some(&constant.identifier),
+            Member::Attribute(attribute) => Some(&attribute.identifier),
+            Member::Operation(operation) => Some(&operation.identifier),
+            _ => None,
+        }
+    }
+
+    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
+        match self {
+            Member::Constant(constant) => &constant.ext_attrs,
+            Member::Attribute(attribute) => &attribute.ext_attrs,
+            Member::Operation(operation) => &operation.ext_attrs,
+            Member::Constructor(constructor) => &constructor.ext_attrs,
+            Member::Stringifer(stringifier) => &stringifier.ext_attrs,
+            Member::Iterable(iterable) => &iterable.ext_attrs,
+            Member::Maplike(maplike) => &maplike.ext_attrs,
+            Member::Setlike(setlike) => &setlike.ext_attrs,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Constant {
     pub ext_attrs: Vec<ExtendedAttribute>,

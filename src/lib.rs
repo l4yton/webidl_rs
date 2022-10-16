@@ -99,6 +99,20 @@ impl Definition {
         }
     }
 
+    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
+        match self {
+            Definition::Interface(interface) => &interface.ext_attrs,
+            Definition::InterfaceMixin(interface_mixin) => &interface_mixin.ext_attrs,
+            Definition::Includes(includes) => &includes.ext_attrs,
+            Definition::CallbackInterface(cb_interface) => &cb_interface.ext_attrs,
+            Definition::Namespace(namespace) => &namespace.ext_attrs,
+            Definition::Dictionary(dictionary) => &dictionary.ext_attrs,
+            Definition::Enumeration(r#enum) => &r#enum.ext_attrs,
+            Definition::CallbackFunction(cb_function) => &cb_function.ext_attrs,
+            Definition::Typedef(typedef) => &typedef.ext_attrs,
+        }
+    }
+
     pub fn is_partial(&self) -> bool {
         match self {
             Definition::Interface(interface) => interface.partial,
