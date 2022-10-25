@@ -1,0 +1,47 @@
+use phf::{phf_set, Set};
+
+// https://webidl.spec.whatwg.org/#idl-types
+pub static IDL_PRIMITIVE_TYPES: Set<&'static str> = phf_set! {
+    "any",
+    "undefined",
+    "boolean",
+    "byte",
+    "octet",
+    "short",
+    "unsigned short",
+    "long",
+    "unsigned long",
+    "long long",
+    "unsigned long long",
+    "float",
+    "unrestricted float",
+    "double",
+    "unrestricted double",
+    "bigint",
+    "DOMString",
+    "ByteString",
+    "USVString",
+    "object",
+    "symbol",
+    "ArrayBuffer",
+    "DataView",
+    "Int8Array",
+    "Int16Array",
+    "Int32Array",
+    "Uint8Array",
+    "Uint16Array",
+    "Uint32Array",
+    "Uint8ClampedArray",
+    "BigInt64Array",
+    "BigUint64Array",
+    "Float32Array",
+    "Float64Array",
+};
+
+pub static IDL_PARAMETERIZED_TYPES: Set<&'static str> = phf_set! {
+    "sequence",
+    "record",
+    "Promise",
+    "FrozenArray",
+    "ObservableArray",
+};
