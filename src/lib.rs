@@ -1,3 +1,4 @@
+mod consts;
 mod display;
 mod members;
 mod parser;
@@ -12,6 +13,7 @@ use nom::{
     Err, IResult,
 };
 
+pub use consts::*;
 pub use members::*;
 pub use types::*;
 
