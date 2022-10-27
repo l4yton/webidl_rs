@@ -6,10 +6,10 @@ mod types;
 
 use nom::{
     bytes::complete::tag,
-    combinator::eof,
+    combinator::{cond, eof},
     error::Error,
     multi::separated_list0,
-    sequence::{delimited, terminated},
+    sequence::{delimited, preceded},
     Err, IResult,
 };
 
@@ -33,27 +33,31 @@ pub trait Parser<T> {
     fn parse(input: &str) -> IResult<&str, T>;
 }
 
+/* Directly exposed library functions. */
+
 pub fn parse_from_string(input: &str) -> Result<Vec<Definition>, Err<Error<String>>> {
-    let (_, definitions) = terminated(
+    // Making the error owned, makes it easier to use this function without having to deal with
+    // potential lifetime issues.
+    _parse_from_string(input).map_err(|e| e.to_owned())
+}
+
+fn _parse_from_string(input: &str) -> Result<Vec<Definition>, Err<Error<&str>>> {
+    let (input, _) = parser::multispace_or_comment0(input)?;
+    let (input, definitions) = separated_list0(
         delimited(
             parser::multispace_or_comment0,
-            separated_list0(
-                delimited(
-                    parser::multispace_or_comment0,
-                    tag(";"),
-                    parser::multispace_or_comment0,
-                ),
-                Definition::parse,
-            ),
-            delimited(
-                parser::multispace_or_comment0,
-                tag(";"),
-                parser::multispace_or_comment0,
-            ),
+            tag(";"),
+            parser::multispace_or_comment0,
         ),
-        eof,
-    )(input)
-    .map_err(|e| e.to_owned())?;
+        Definition::parse,
+    )(input)?;
+    // `seperated_list0()` doesn't consume the last seperator, hence make sure that the last
+    // definition also ends with a semicolon.
+    let (input, _) = cond(
+        !definitions.is_empty(),
+        preceded(parser::multispace_or_comment0, tag(";")),
+    )(input)?;
+    let (_input, _) = preceded(parser::multispace_or_comment0, eof)(input)?;
 
     Ok(definitions)
 }
@@ -73,6 +77,8 @@ pub fn definitions_to_string(definitions: &[Definition]) -> String {
     string
 }
 
+/* The main definition types for Web IDL. */
+
 #[derive(Debug, Clone)]
 pub enum Definition {
     Interface(Interface),
@@ -84,60 +90,6 @@ pub enum Definition {
     Enumeration(Enumeration),
     CallbackFunction(CallbackFunction),
     Typedef(Typedef),
-}
-
-impl Definition {
-    pub fn get_identifier(&self) -> Option<&str> {
-        match self {
-            Definition::Interface(interface) => Some(&interface.identifier),
-            Definition::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
-            Definition::Includes(_) => None,
-            Definition::CallbackInterface(cb_interface) => Some(&cb_interface.identifier),
-            Definition::Namespace(namespace) => Some(&namespace.identifier),
-            Definition::Dictionary(dictionary) => Some(&dictionary.identifier),
-            Definition::Enumeration(r#enum) => Some(&r#enum.identifier),
-            Definition::CallbackFunction(cb_function) => Some(&cb_function.identifier),
-            Definition::Typedef(typedef) => Some(&typedef.identifier),
-        }
-    }
-
-    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
-        match self {
-            Definition::Interface(interface) => &interface.ext_attrs,
-            Definition::InterfaceMixin(interface_mixin) => &interface_mixin.ext_attrs,
-            Definition::Includes(includes) => &includes.ext_attrs,
-            Definition::CallbackInterface(cb_interface) => &cb_interface.ext_attrs,
-            Definition::Namespace(namespace) => &namespace.ext_attrs,
-            Definition::Dictionary(dictionary) => &dictionary.ext_attrs,
-            Definition::Enumeration(r#enum) => &r#enum.ext_attrs,
-            Definition::CallbackFunction(cb_function) => &cb_function.ext_attrs,
-            Definition::Typedef(typedef) => &typedef.ext_attrs,
-        }
-    }
-
-    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
-        match self {
-            Definition::Interface(interface) => &mut interface.ext_attrs,
-            Definition::InterfaceMixin(interface_mixin) => &mut interface_mixin.ext_attrs,
-            Definition::Includes(includes) => &mut includes.ext_attrs,
-            Definition::CallbackInterface(cb_interface) => &mut cb_interface.ext_attrs,
-            Definition::Namespace(namespace) => &mut namespace.ext_attrs,
-            Definition::Dictionary(dictionary) => &mut dictionary.ext_attrs,
-            Definition::Enumeration(r#enum) => &mut r#enum.ext_attrs,
-            Definition::CallbackFunction(cb_function) => &mut cb_function.ext_attrs,
-            Definition::Typedef(typedef) => &mut typedef.ext_attrs,
-        }
-    }
-
-    pub fn is_partial(&self) -> bool {
-        match self {
-            Definition::Interface(interface) => interface.partial,
-            Definition::InterfaceMixin(interface_mixin) => interface_mixin.partial,
-            Definition::Namespace(namespace) => namespace.partial,
-            Definition::Dictionary(dictionary) => dictionary.partial,
-            _ => false,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -265,4 +217,60 @@ pub enum DefaultValue {
     Undefined,
     Sequence,
     Dictionary,
+}
+
+/* Function implementations. */
+
+impl Definition {
+    pub fn get_identifier(&self) -> Option<&str> {
+        match self {
+            Definition::Interface(interface) => Some(&interface.identifier),
+            Definition::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
+            Definition::Includes(_) => None,
+            Definition::CallbackInterface(cb_interface) => Some(&cb_interface.identifier),
+            Definition::Namespace(namespace) => Some(&namespace.identifier),
+            Definition::Dictionary(dictionary) => Some(&dictionary.identifier),
+            Definition::Enumeration(r#enum) => Some(&r#enum.identifier),
+            Definition::CallbackFunction(cb_function) => Some(&cb_function.identifier),
+            Definition::Typedef(typedef) => Some(&typedef.identifier),
+        }
+    }
+
+    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
+        match self {
+            Definition::Interface(interface) => &interface.ext_attrs,
+            Definition::InterfaceMixin(interface_mixin) => &interface_mixin.ext_attrs,
+            Definition::Includes(includes) => &includes.ext_attrs,
+            Definition::CallbackInterface(cb_interface) => &cb_interface.ext_attrs,
+            Definition::Namespace(namespace) => &namespace.ext_attrs,
+            Definition::Dictionary(dictionary) => &dictionary.ext_attrs,
+            Definition::Enumeration(r#enum) => &r#enum.ext_attrs,
+            Definition::CallbackFunction(cb_function) => &cb_function.ext_attrs,
+            Definition::Typedef(typedef) => &typedef.ext_attrs,
+        }
+    }
+
+    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
+        match self {
+            Definition::Interface(interface) => &mut interface.ext_attrs,
+            Definition::InterfaceMixin(interface_mixin) => &mut interface_mixin.ext_attrs,
+            Definition::Includes(includes) => &mut includes.ext_attrs,
+            Definition::CallbackInterface(cb_interface) => &mut cb_interface.ext_attrs,
+            Definition::Namespace(namespace) => &mut namespace.ext_attrs,
+            Definition::Dictionary(dictionary) => &mut dictionary.ext_attrs,
+            Definition::Enumeration(r#enum) => &mut r#enum.ext_attrs,
+            Definition::CallbackFunction(cb_function) => &mut cb_function.ext_attrs,
+            Definition::Typedef(typedef) => &mut typedef.ext_attrs,
+        }
+    }
+
+    pub fn is_partial(&self) -> bool {
+        match self {
+            Definition::Interface(interface) => interface.partial,
+            Definition::InterfaceMixin(interface_mixin) => interface_mixin.partial,
+            Definition::Namespace(namespace) => namespace.partial,
+            Definition::Dictionary(dictionary) => dictionary.partial,
+            _ => false,
+        }
+    }
 }

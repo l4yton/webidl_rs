@@ -1,5 +1,5 @@
 # webidl_rs
-A [Web IDL](https://webidl.spec.whatwg.org/) parser for rust. It supports converting parsed Web IDL back to a string.
+A [Web IDL](https://webidl.spec.whatwg.org/) parser for rust, powered by [nom](https://github.com/Geal/nom). It supports converting parsed Web IDL back to a string.
 
 ## Usage
 
