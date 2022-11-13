@@ -1,8 +1,8 @@
 use std::fmt;
 
 use crate::{
-    display, ternary, FrozenArrayType, ObservableArrayType, PromiseType, RecordType, RecordTypeKey,
-    SequenceType, StandardType, StandardTypeName, Type, UnionType,
+    display, ternary, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
+    RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
 impl fmt::Display for Type {
@@ -130,41 +130,48 @@ impl fmt::Display for StandardType {
 impl fmt::Display for StandardTypeName {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            StandardTypeName::PrimitiveType(primitive_type) => write!(f, "{}", primitive_type),
             StandardTypeName::Identifier(identifier) => write!(f, "{}", identifier),
+        }
+    }
+}
 
-            StandardTypeName::Any => write!(f, "any"),
-            StandardTypeName::Undefined => write!(f, "undefined"),
-            StandardTypeName::Boolean => write!(f, "boolean"),
-            StandardTypeName::Byte => write!(f, "byte"),
-            StandardTypeName::Octet => write!(f, "octet"),
-            StandardTypeName::Short => write!(f, "short"),
-            StandardTypeName::UnsignedShort => write!(f, "unsigned short"),
-            StandardTypeName::Long => write!(f, "long"),
-            StandardTypeName::UnsignedLong => write!(f, "unsigned long"),
-            StandardTypeName::LongLong => write!(f, "long long"),
-            StandardTypeName::UnsignedLongLong => write!(f, "unsigned long long"),
-            StandardTypeName::Float => write!(f, "float"),
-            StandardTypeName::UnrestrictedFloat => write!(f, "unrestricted float"),
-            StandardTypeName::Double => write!(f, "double"),
-            StandardTypeName::UnrestrictedDouble => write!(f, "unrestricted double"),
-            StandardTypeName::Bigint => write!(f, "bigint"),
-            StandardTypeName::DOMString => write!(f, "DOMString"),
-            StandardTypeName::ByteString => write!(f, "ByteString"),
-            StandardTypeName::USVString => write!(f, "USVString"),
-            StandardTypeName::Object => write!(f, "object"),
-            StandardTypeName::Symbol => write!(f, "symbol"),
-            StandardTypeName::ArrayBuffer => write!(f, "ArrayBuffer"),
-            StandardTypeName::Int8Array => write!(f, "Int8Array"),
-            StandardTypeName::Int16Array => write!(f, "Int16Array"),
-            StandardTypeName::Int32Array => write!(f, "Int32Array"),
-            StandardTypeName::Uint8Array => write!(f, "Uint8Array"),
-            StandardTypeName::Uint16Array => write!(f, "Uint16Array"),
-            StandardTypeName::Uint32Array => write!(f, "Uint32Array"),
-            StandardTypeName::Uint8ClampedArray => write!(f, "Uint8ClampedArray"),
-            StandardTypeName::BigInt64Array => write!(f, "BigInt64Array"),
-            StandardTypeName::BigUint64Array => write!(f, "BigUint64Array"),
-            StandardTypeName::Float32Array => write!(f, "Float32Array"),
-            StandardTypeName::Float64Array => write!(f, "Float64Array"),
+impl fmt::Display for PrimitiveType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PrimitiveType::Any => write!(f, "any"),
+            PrimitiveType::Undefined => write!(f, "undefined"),
+            PrimitiveType::Boolean => write!(f, "boolean"),
+            PrimitiveType::Byte => write!(f, "byte"),
+            PrimitiveType::Octet => write!(f, "octet"),
+            PrimitiveType::Short => write!(f, "short"),
+            PrimitiveType::UnsignedShort => write!(f, "unsigned short"),
+            PrimitiveType::Long => write!(f, "long"),
+            PrimitiveType::UnsignedLong => write!(f, "unsigned long"),
+            PrimitiveType::LongLong => write!(f, "long long"),
+            PrimitiveType::UnsignedLongLong => write!(f, "unsigned long long"),
+            PrimitiveType::Float => write!(f, "float"),
+            PrimitiveType::UnrestrictedFloat => write!(f, "unrestricted float"),
+            PrimitiveType::Double => write!(f, "double"),
+            PrimitiveType::UnrestrictedDouble => write!(f, "unrestricted double"),
+            PrimitiveType::Bigint => write!(f, "bigint"),
+            PrimitiveType::DOMString => write!(f, "DOMString"),
+            PrimitiveType::ByteString => write!(f, "ByteString"),
+            PrimitiveType::USVString => write!(f, "USVString"),
+            PrimitiveType::Object => write!(f, "object"),
+            PrimitiveType::Symbol => write!(f, "symbol"),
+            PrimitiveType::ArrayBuffer => write!(f, "ArrayBuffer"),
+            PrimitiveType::Int8Array => write!(f, "Int8Array"),
+            PrimitiveType::Int16Array => write!(f, "Int16Array"),
+            PrimitiveType::Int32Array => write!(f, "Int32Array"),
+            PrimitiveType::Uint8Array => write!(f, "Uint8Array"),
+            PrimitiveType::Uint16Array => write!(f, "Uint16Array"),
+            PrimitiveType::Uint32Array => write!(f, "Uint32Array"),
+            PrimitiveType::Uint8ClampedArray => write!(f, "Uint8ClampedArray"),
+            PrimitiveType::BigInt64Array => write!(f, "BigInt64Array"),
+            PrimitiveType::BigUint64Array => write!(f, "BigUint64Array"),
+            PrimitiveType::Float32Array => write!(f, "Float32Array"),
+            PrimitiveType::Float64Array => write!(f, "Float64Array"),
         }
     }
 }
