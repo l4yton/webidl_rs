@@ -197,21 +197,18 @@ impl Parser<PrimitiveType> for PrimitiveType {
     fn parse(input: &str) -> IResult<&str, PrimitiveType> {
         terminated(
             alt((
-                // Primitive types with spaces.
-                alt((
-                    map(tag("unsigned short"), |_| PrimitiveType::UnsignedShort),
-                    map(tag("unsigned long long"), |_| {
-                        PrimitiveType::UnsignedLongLong
-                    }),
-                    map(tag("unsigned long"), |_| PrimitiveType::UnsignedLong),
-                    map(tag("long long"), |_| PrimitiveType::LongLong),
-                    map(tag("unrestricted float"), |_| {
-                        PrimitiveType::UnrestrictedFloat
-                    }),
-                    map(tag("unrestricted double"), |_| {
-                        PrimitiveType::UnrestrictedDouble
-                    }),
-                )),
+                map(tag("unsigned short"), |_| PrimitiveType::UnsignedShort),
+                map(tag("unsigned long long"), |_| {
+                    PrimitiveType::UnsignedLongLong
+                }),
+                map(tag("unsigned long"), |_| PrimitiveType::UnsignedLong),
+                map(tag("long long"), |_| PrimitiveType::LongLong),
+                map(tag("unrestricted float"), |_| {
+                    PrimitiveType::UnrestrictedFloat
+                }),
+                map(tag("unrestricted double"), |_| {
+                    PrimitiveType::UnrestrictedDouble
+                }),
                 map(tag("any"), |_| PrimitiveType::Any),
                 map(tag("undefinded"), |_| PrimitiveType::Undefined),
                 // NOTE: Interpreting "void" as "undefined", see: https://github.com/whatwg/webidl/issues/60
@@ -227,13 +224,13 @@ impl Parser<PrimitiveType> for PrimitiveType {
                 map(tag("DOMString"), |_| PrimitiveType::DOMString),
                 map(tag("ByteString"), |_| PrimitiveType::ByteString),
                 map(tag("USVString"), |_| PrimitiveType::USVString),
-                map(tag("object"), |_| PrimitiveType::Object),
-                map(tag("symbol"), |_| PrimitiveType::Symbol),
-                map(tag("ArrayBuffer"), |_| PrimitiveType::ArrayBuffer),
-                map(tag("Int8Array"), |_| PrimitiveType::Int8Array),
-                map(tag("Int16Array"), |_| PrimitiveType::Int16Array),
                 // There is a limit of 21 parsers by alt().
                 alt((
+                    map(tag("object"), |_| PrimitiveType::Object),
+                    map(tag("symbol"), |_| PrimitiveType::Symbol),
+                    map(tag("ArrayBuffer"), |_| PrimitiveType::ArrayBuffer),
+                    map(tag("Int8Array"), |_| PrimitiveType::Int8Array),
+                    map(tag("Int16Array"), |_| PrimitiveType::Int16Array),
                     map(tag("Int32Array"), |_| PrimitiveType::Int32Array),
                     map(tag("Uint8Array"), |_| PrimitiveType::Uint8Array),
                     map(tag("Uint16Array"), |_| PrimitiveType::Uint16Array),
