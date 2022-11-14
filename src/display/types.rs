@@ -130,7 +130,7 @@ impl fmt::Display for StandardType {
 impl fmt::Display for StandardTypeName {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            StandardTypeName::PrimitiveType(primitive_type) => write!(f, "{}", primitive_type),
+            StandardTypeName::Primitive(primitive_type) => write!(f, "{}", primitive_type),
             StandardTypeName::Identifier(identifier) => write!(f, "{}", identifier),
         }
     }

@@ -187,7 +187,7 @@ impl Parser<StandardType> for StandardType {
 impl Parser<StandardTypeName> for StandardTypeName {
     fn parse(input: &str) -> IResult<&str, StandardTypeName> {
         alt((
-            map(PrimitiveType::parse, StandardTypeName::PrimitiveType),
+            map(PrimitiveType::parse, StandardTypeName::Primitive),
             map(parser::parse_identifier, StandardTypeName::Identifier),
         ))(input)
     }

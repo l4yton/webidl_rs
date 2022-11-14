@@ -66,7 +66,7 @@ pub struct StandardType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StandardTypeName {
-    PrimitiveType(PrimitiveType),
+    Primitive(PrimitiveType),
     Identifier(String),
 }
 
