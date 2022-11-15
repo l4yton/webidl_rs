@@ -223,6 +223,8 @@ impl PartialEq for UnionType {
     }
 }
 
+impl Eq for UnionType {}
+
 // For the union type, we want that the hash for `(Foo or Bar)` == `(Bar or Foo)`,
 // therefore we first compute the hash for each possible type, put them in a vector,
 // sort it and use the resulting vector to calculate the final hash. ¯\_(ツ)_/¯
