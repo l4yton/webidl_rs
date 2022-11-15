@@ -99,7 +99,7 @@ pub struct Setlike {
     pub r#type: Type,
 }
 
-/* Function implementations for these types. */
+/* Function implementations. */
 
 impl Member {
     pub fn get_identifier(&self) -> Option<&str> {
