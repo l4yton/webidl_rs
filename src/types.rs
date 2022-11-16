@@ -122,6 +122,7 @@ impl PartialEq for Type {
             }
             (Type::Record(record), Type::Record(other_record)) => record == other_record,
             (Type::Promise(promise), Type::Promise(other_promise)) => promise == other_promise,
+            (Type::Union(r#union), Type::Union(other_union)) => r#union == other_union,
             (Type::FrozenArray(frozen_array), Type::FrozenArray(other_frozen_array)) => {
                 frozen_array == other_frozen_array
             }
@@ -132,10 +133,6 @@ impl PartialEq for Type {
             (Type::Standard(standard), Type::Standard(other_standard)) => {
                 standard == other_standard
             }
-
-            // Special handling for Union types.
-            (Type::Union(r#union), _) | (_, Type::Union(r#union)) => r#union == other,
-
             _ => false,
         }
     }
@@ -198,12 +195,6 @@ impl Eq for PromiseType {}
 impl Hash for PromiseType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.r#type.hash(state);
-    }
-}
-
-impl PartialEq<Type> for UnionType {
-    fn eq(&self, other: &Type) -> bool {
-        self.types.iter().any(|r#type| r#type == other)
     }
 }
 
