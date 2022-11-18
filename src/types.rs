@@ -5,7 +5,7 @@ use std::{
 
 use crate::ExtendedAttribute;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Type {
     Sequence(SequenceType),
     Record(RecordType),
@@ -113,48 +113,6 @@ pub enum PrimitiveType {
 }
 
 /* Function implementations. */
-
-impl PartialEq for Type {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Type::Sequence(sequence), Type::Sequence(other_sequence)) => {
-                sequence == other_sequence
-            }
-            (Type::Record(record), Type::Record(other_record)) => record == other_record,
-            (Type::Promise(promise), Type::Promise(other_promise)) => promise == other_promise,
-            (Type::Union(r#union), Type::Union(other_union)) => r#union == other_union,
-            (Type::FrozenArray(frozen_array), Type::FrozenArray(other_frozen_array)) => {
-                frozen_array == other_frozen_array
-            }
-            (
-                Type::ObservableArray(observable_array),
-                Type::ObservableArray(other_observable_array),
-            ) => observable_array == other_observable_array,
-            (Type::Standard(standard), Type::Standard(other_standard)) => {
-                standard == other_standard
-            }
-            _ => false,
-        }
-    }
-}
-
-impl Eq for Type {}
-
-impl Hash for Type {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        std::mem::discriminant(self).hash(state);
-
-        match self {
-            Type::Sequence(sequence) => sequence.hash(state),
-            Type::Record(record) => record.hash(state),
-            Type::Promise(promise) => promise.hash(state),
-            Type::Union(r#union) => r#union.hash(state),
-            Type::FrozenArray(frozen_array) => frozen_array.hash(state),
-            Type::ObservableArray(observable_array) => observable_array.hash(state),
-            Type::Standard(standard) => standard.hash(state),
-        }
-    }
-}
 
 impl PartialEq for SequenceType {
     fn eq(&self, other: &Self) -> bool {

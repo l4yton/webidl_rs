@@ -10,7 +10,7 @@ use nom::{
 
 use crate::{
     parser, CallbackFunction, CallbackInterface, Definition, Dictionary, Enumeration, Includes,
-    Interface, InterfaceMixin, Namespace, Parser, Type, Typedef,
+    Interface, InterfaceMixin, Member, Namespace, Parser, Type, Typedef,
 };
 
 fn parse_check_is_partial(input: &str) -> IResult<&str, bool> {
@@ -145,6 +145,15 @@ impl Parser<Definition> for CallbackInterface {
         let (input, identifier) = parse_definition_identifier(input, "callback interface")?;
         let (input, members) =
             preceded(parser::multispace_or_comment0, parser::parse_members)(input)?;
+
+        // "Callback interfaces must define exactly one regular operation."
+        assert!(
+            members
+                .iter()
+                .filter(|member| matches!(member, Member::Operation(_)))
+                .count()
+                == 1
+        );
 
         Ok((
             input,
