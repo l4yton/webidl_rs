@@ -114,6 +114,22 @@ pub enum PrimitiveType {
 
 /* Function implementations. */
 
+impl From<String> for Type {
+    fn from(identifier: String) -> Self {
+        Self::Standard(StandardType {
+            ext_attrs: vec![],
+            name: StandardTypeName::Identifier(identifier),
+            nullable: false,
+        })
+    }
+}
+
+impl From<&str> for Type {
+    fn from(identifier: &str) -> Self {
+        identifier.to_string().into()
+    }
+}
+
 impl PartialEq for SequenceType {
     fn eq(&self, other: &Self) -> bool {
         self.r#type == other.r#type
