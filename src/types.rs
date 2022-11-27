@@ -112,7 +112,7 @@ pub enum PrimitiveType {
     Float64Array,
 }
 
-/* Function implementations. */
+/* Implement From<T> traits. */
 
 impl From<String> for Type {
     fn from(identifier: String) -> Self {
@@ -129,6 +129,8 @@ impl From<&str> for Type {
         identifier.to_string().into()
     }
 }
+
+/* PartialEq, Eq and Hash implementations. */
 
 impl PartialEq for SequenceType {
     fn eq(&self, other: &Self) -> bool {

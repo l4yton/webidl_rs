@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::{
-    display, ternary, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
+    display, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
     RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
@@ -27,7 +27,7 @@ impl fmt::Display for SequenceType {
             f,
             "sequence<{}>{}",
             self.r#type,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
@@ -72,7 +72,7 @@ impl fmt::Display for UnionType {
             "{}({}){}",
             ext_attrs_str,
             result,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
@@ -83,7 +83,7 @@ impl fmt::Display for PromiseType {
             f,
             "Promise<{}>{}",
             self.r#type,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
@@ -94,7 +94,7 @@ impl fmt::Display for FrozenArrayType {
             f,
             "FrozenArray<{}>{}",
             self.r#type,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
@@ -105,7 +105,7 @@ impl fmt::Display for ObservableArrayType {
             f,
             "ObservableArray<{}>{}",
             self.r#type,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
@@ -122,7 +122,7 @@ impl fmt::Display for StandardType {
             "{}{}{}",
             ext_attrs_str,
             self.name,
-            ternary!(self.nullable, "?", "")
+            if self.nullable { "?" } else { "" }
         )
     }
 }
