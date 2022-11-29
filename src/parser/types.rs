@@ -8,7 +8,7 @@ use nom::{
 };
 
 use crate::{
-    parser, FrozenArrayType, ObservableArrayType, Parser, PrimitiveType, PromiseType, RecordType,
+    parser, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
     RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
@@ -24,8 +24,8 @@ fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, 
     )(input)
 }
 
-impl Parser<Type> for Type {
-    fn parse(input: &str) -> IResult<&str, Type> {
+impl Type {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Type> {
         alt((
             map(SequenceType::parse, Type::Sequence),
             map(RecordType::parse, Type::Record),
@@ -38,8 +38,8 @@ impl Parser<Type> for Type {
     }
 }
 
-impl Parser<SequenceType> for SequenceType {
-    fn parse(input: &str) -> IResult<&str, SequenceType> {
+impl SequenceType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, SequenceType> {
         let (input, r#type) = parse_parameterized_type(input, "sequence")?;
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
@@ -53,8 +53,8 @@ impl Parser<SequenceType> for SequenceType {
     }
 }
 
-impl Parser<RecordType> for RecordType {
-    fn parse(input: &str) -> IResult<&str, RecordType> {
+impl RecordType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, RecordType> {
         let (input, (key, value)) = delimited(
             delimited(tag("record"), parser::multispace_or_comment0, tag("<")),
             separated_pair(
@@ -86,8 +86,8 @@ impl Parser<RecordType> for RecordType {
     }
 }
 
-impl Parser<UnionType> for UnionType {
-    fn parse(input: &str) -> IResult<&str, UnionType> {
+impl UnionType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, UnionType> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, types) = delimited(
             delimited(
@@ -121,8 +121,8 @@ impl Parser<UnionType> for UnionType {
     }
 }
 
-impl Parser<PromiseType> for PromiseType {
-    fn parse(input: &str) -> IResult<&str, PromiseType> {
+impl PromiseType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, PromiseType> {
         let (input, r#type) = parse_parameterized_type(input, "Promise")?;
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
@@ -136,8 +136,8 @@ impl Parser<PromiseType> for PromiseType {
     }
 }
 
-impl Parser<FrozenArrayType> for FrozenArrayType {
-    fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
+impl FrozenArrayType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
@@ -151,8 +151,8 @@ impl Parser<FrozenArrayType> for FrozenArrayType {
     }
 }
 
-impl Parser<ObservableArrayType> for ObservableArrayType {
-    fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
+impl ObservableArrayType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
@@ -166,8 +166,8 @@ impl Parser<ObservableArrayType> for ObservableArrayType {
     }
 }
 
-impl Parser<StandardType> for StandardType {
-    fn parse(input: &str) -> IResult<&str, StandardType> {
+impl StandardType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, StandardType> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, name) =
             preceded(parser::multispace_or_comment0, StandardTypeName::parse)(input)?;
@@ -184,8 +184,8 @@ impl Parser<StandardType> for StandardType {
     }
 }
 
-impl Parser<StandardTypeName> for StandardTypeName {
-    fn parse(input: &str) -> IResult<&str, StandardTypeName> {
+impl StandardTypeName {
+    pub(crate) fn parse(input: &str) -> IResult<&str, StandardTypeName> {
         alt((
             map(PrimitiveType::parse, StandardTypeName::Primitive),
             map(parser::parse_identifier, StandardTypeName::Identifier),
@@ -193,8 +193,8 @@ impl Parser<StandardTypeName> for StandardTypeName {
     }
 }
 
-impl Parser<PrimitiveType> for PrimitiveType {
-    fn parse(input: &str) -> IResult<&str, PrimitiveType> {
+impl PrimitiveType {
+    pub(crate) fn parse(input: &str) -> IResult<&str, PrimitiveType> {
         terminated(
             alt((
                 map(tag("unsigned short"), |_| PrimitiveType::UnsignedShort),

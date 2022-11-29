@@ -1,8 +1,8 @@
 use std::fmt;
 
 use crate::{
-    display, ternary, CallbackFunction, CallbackInterface, Definition, Dictionary,
-    DictionaryMember, Enumeration, Includes, Interface, InterfaceMixin, Member, Namespace, Typedef,
+    display, CallbackFunction, CallbackInterface, Definition, Dictionary, DictionaryMember,
+    Enumeration, Includes, Interface, InterfaceMixin, Member, Namespace, Typedef,
 };
 
 fn display_inheritance(inheritance: &Option<String>) -> String {
@@ -84,7 +84,7 @@ impl fmt::Display for Interface {
             f,
             "{}{}interface {} {}{{\n{}}};",
             ext_attrs_str,
-            ternary!(self.partial, "partial ", ""),
+            if self.partial { "partial " } else { "" },
             self.identifier,
             display_inheritance(&self.inheritance),
             display_members(&self.members),
@@ -103,7 +103,7 @@ impl fmt::Display for InterfaceMixin {
             f,
             "{}{}interface mixin {} {{\n{}}};",
             ext_attrs_str,
-            ternary!(self.partial, "partial ", ""),
+            if self.partial { "partial " } else { "" },
             self.identifier,
             display_members(&self.members),
         )
@@ -153,7 +153,7 @@ impl fmt::Display for Namespace {
             f,
             "{}{}namespace {} {{\n{}}};",
             ext_attrs_str,
-            ternary!(self.partial, "partial ", ""),
+            if self.partial { "partial " } else { "" },
             self.identifier,
             display_members(&self.members),
         )
@@ -171,7 +171,7 @@ impl fmt::Display for Dictionary {
             f,
             "{}{}dictionary {} {}{{\n{}}};",
             ext_attrs_str,
-            ternary!(self.partial, "partial ", ""),
+            if self.partial { "partial " } else { "" },
             self.identifier,
             display_inheritance(&self.inheritance),
             display_dictionary_members(&self.members),

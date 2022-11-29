@@ -1,8 +1,8 @@
 use std::fmt;
 
 use crate::{
-    display, ternary, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike,
-    Member, OpSpecial, Operation, Setlike, Stringifer,
+    display, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
+    OpSpecial, Operation, Setlike, Stringifer,
 };
 
 impl fmt::Display for Member {
@@ -38,7 +38,9 @@ impl fmt::Display for Constant {
 impl fmt::Display for ConstValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ConstValue::Boolean(boolean) => write!(f, "{}", ternary!(*boolean, "true", "false")),
+            ConstValue::Boolean(boolean) => {
+                write!(f, "{}", if *boolean { "true" } else { "false" })
+            }
             ConstValue::Integer(integer) => write!(f, "{}", integer),
             ConstValue::Decimal(decimal) => write!(f, "{}", decimal),
             ConstValue::NegativeInfinity => write!(f, "-Infinity"),
@@ -69,7 +71,7 @@ impl fmt::Display for Attribute {
             "{}{}{}attribute {} {};",
             ext_attrs_str,
             special_str,
-            ternary!(self.readonly, "readonly ", ""),
+            if self.readonly { "readonly " } else { "" },
             self.r#type,
             self.identifier
         )
@@ -144,7 +146,7 @@ impl fmt::Display for Iterable {
                 f,
                 "{}{}iterable<{}, {}>;",
                 ext_attrs_str,
-                ternary!(self.r#async, "async ", ""),
+                if self.r#async { "async " } else { "" },
                 key_type,
                 self.value_type
             );
@@ -154,7 +156,7 @@ impl fmt::Display for Iterable {
             f,
             "{}{}iterable<{}>;",
             ext_attrs_str,
-            ternary!(self.r#async, "async ", ""),
+            if self.r#async { "async " } else { "" },
             self.value_type
         )
     }
@@ -171,7 +173,7 @@ impl fmt::Display for Maplike {
             f,
             "{}{}maplike<{}, {}>;",
             ext_attrs_str,
-            ternary!(self.readonly, "readonly ", ""),
+            if self.readonly { "readonly " } else { "" },
             self.key_type,
             self.value_type
         )
@@ -189,7 +191,7 @@ impl fmt::Display for Setlike {
             f,
             "{}{}setlike<{}>;",
             ext_attrs_str,
-            ternary!(self.readonly, "readonly ", ""),
+            if self.readonly { "readonly " } else { "" },
             self.r#type,
         )
     }

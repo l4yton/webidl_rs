@@ -15,7 +15,7 @@ use webidl_rs::{Constructor, Definition, Member};
 
 fn main() {
     let mut definitions =
-        webidl_rs::parse_from_string("[Exposed=Window] interface Foo { };").unwrap();
+        webidl_rs::parse("[Exposed=Window] interface Foo { };").unwrap();
 
     // Add a constructor to the first definition.
     if let Some(Definition::Interface(interface)) = definitions.first_mut() {
@@ -26,6 +26,12 @@ fn main() {
     }
 
     // Print the Web IDL with the added constructor.
-    println!("{}", webidl_rs::definitions_to_string(&definitions));
+    print!("{}", webidl_rs::to_string(&definitions));
 }
 ```
+
+## TODO
+- [ ] Better documentation
+- [ ] Add tests
+- [ ] Replace asserts with custom errors in parser
+- [ ] Validate Web IDL semantically (more)

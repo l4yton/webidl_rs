@@ -10,7 +10,7 @@ use nom::{
     IResult,
 };
 
-use crate::{Argument, DefaultValue, DictionaryMember, ExtendedAttribute, Member, Parser, Type};
+use crate::{Argument, DefaultValue, DictionaryMember, ExtendedAttribute, Member, Type};
 
 // As definined in: https://webidl.spec.whatwg.org/#idl-grammar
 pub(crate) fn parse_identifier(input: &str) -> IResult<&str, String> {
@@ -111,8 +111,8 @@ pub(crate) fn parse_members(input: &str) -> IResult<&str, Vec<Member>> {
     )(input)
 }
 
-impl Parser<Argument> for Argument {
-    fn parse(input: &str) -> IResult<&str, Argument> {
+impl Argument {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Argument> {
         let (input, ext_attrs) = parse_ext_attrs(input)?;
         let (input, optional) = map(
             opt(delimited(
@@ -146,8 +146,8 @@ impl Parser<Argument> for Argument {
     }
 }
 
-impl Parser<DefaultValue> for DefaultValue {
-    fn parse(input: &str) -> IResult<&str, DefaultValue> {
+impl DefaultValue {
+    pub(crate) fn parse(input: &str) -> IResult<&str, DefaultValue> {
         alt((
             map(alt((tag("true"), tag("false"))), |s: &str| {
                 DefaultValue::Boolean(s.parse::<bool>().unwrap())
@@ -180,8 +180,8 @@ impl Parser<DefaultValue> for DefaultValue {
     }
 }
 
-impl Parser<DictionaryMember> for DictionaryMember {
-    fn parse(input: &str) -> IResult<&str, DictionaryMember> {
+impl DictionaryMember {
+    pub(crate) fn parse(input: &str) -> IResult<&str, DictionaryMember> {
         let (input, ext_attrs) = parse_ext_attrs(input)?;
         let (input, required) = map(
             opt(delimited(

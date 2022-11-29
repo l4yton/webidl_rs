@@ -10,7 +10,7 @@ use nom::{
 
 use crate::{
     parser, CallbackFunction, CallbackInterface, Definition, Dictionary, Enumeration, Includes,
-    Interface, InterfaceMixin, Member, Namespace, Parser, Type, Typedef,
+    Interface, InterfaceMixin, Member, Namespace, Type, Typedef,
 };
 
 fn parse_check_is_partial(input: &str) -> IResult<&str, bool> {
@@ -49,8 +49,8 @@ fn parse_definition_identifier<'a>(
     )(input)
 }
 
-impl Parser<Definition> for Definition {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Definition {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         alt((
             Interface::parse,
             InterfaceMixin::parse,
@@ -65,8 +65,8 @@ impl Parser<Definition> for Definition {
     }
 }
 
-impl Parser<Definition> for Interface {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Interface {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, partial) = parse_check_is_partial(input)?;
         let (input, identifier) = parse_definition_identifier(input, "interface")?;
@@ -94,8 +94,8 @@ impl Parser<Definition> for Interface {
     }
 }
 
-impl Parser<Definition> for InterfaceMixin {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl InterfaceMixin {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, partial) = parse_check_is_partial(input)?;
         let (input, identifier) = parse_definition_identifier(input, "interface mixin")?;
@@ -114,8 +114,8 @@ impl Parser<Definition> for InterfaceMixin {
     }
 }
 
-impl Parser<Definition> for Includes {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Includes {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, _) = parser::multispace_or_comment0(input)?;
         let (input, (interface, mixin)) = separated_pair(
@@ -139,8 +139,8 @@ impl Parser<Definition> for Includes {
     }
 }
 
-impl Parser<Definition> for CallbackInterface {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl CallbackInterface {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, identifier) = parse_definition_identifier(input, "callback interface")?;
         let (input, members) =
@@ -166,8 +166,8 @@ impl Parser<Definition> for CallbackInterface {
     }
 }
 
-impl Parser<Definition> for Namespace {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Namespace {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, partial) = parse_check_is_partial(input)?;
         let (input, identifier) = parse_definition_identifier(input, "namespace")?;
@@ -186,8 +186,8 @@ impl Parser<Definition> for Namespace {
     }
 }
 
-impl Parser<Definition> for Dictionary {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Dictionary {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, partial) = parse_check_is_partial(input)?;
         let (input, identifier) = parse_definition_identifier(input, "dictionary")?;
@@ -216,8 +216,8 @@ impl Parser<Definition> for Dictionary {
     }
 }
 
-impl Parser<Definition> for Enumeration {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Enumeration {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, identifier) = parse_definition_identifier(input, "enum")?;
         let (input, _) = delimited(
@@ -256,8 +256,8 @@ impl Parser<Definition> for Enumeration {
     }
 }
 
-impl Parser<Definition> for CallbackFunction {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl CallbackFunction {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, identifier) = parse_definition_identifier(input, "callback")?;
         let (input, r#type) = preceded(
@@ -282,8 +282,8 @@ impl Parser<Definition> for CallbackFunction {
     }
 }
 
-impl Parser<Definition> for Typedef {
-    fn parse(input: &str) -> IResult<&str, Definition> {
+impl Typedef {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Definition> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, r#type) = preceded(
             delimited(

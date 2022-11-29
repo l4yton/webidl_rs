@@ -9,8 +9,8 @@ use nom::{
 };
 
 use crate::{
-    parser, ternary, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike,
-    Member, OpSpecial, Operation, Parser, Setlike, Stringifer, Type,
+    parser, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
+    OpSpecial, Operation, Setlike, Stringifer, Type,
 };
 
 fn parse_member_type<'a>(input: &'a str, member_tag: &str) -> IResult<&'a str, Type> {
@@ -38,8 +38,8 @@ fn parse_check_is_readonly(input: &str) -> IResult<&str, bool> {
     )(input)
 }
 
-impl Parser<Member> for Member {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Member {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         alt((
             Constant::parse,
             Attribute::parse,
@@ -53,8 +53,8 @@ impl Parser<Member> for Member {
     }
 }
 
-impl Parser<Member> for Constant {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Constant {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, r#type) = parse_member_type(input, "const")?;
         let (input, identifier) = parser::parse_identifier(input)?;
@@ -79,8 +79,8 @@ impl Parser<Member> for Constant {
     }
 }
 
-impl Parser<ConstValue> for ConstValue {
-    fn parse(input: &str) -> IResult<&str, ConstValue> {
+impl ConstValue {
+    pub(crate) fn parse(input: &str) -> IResult<&str, ConstValue> {
         alt((
             map(alt((tag("true"), tag("false"))), |s: &str| {
                 ConstValue::Boolean(s.parse::<bool>().unwrap())
@@ -105,8 +105,8 @@ impl Parser<ConstValue> for ConstValue {
     }
 }
 
-impl Parser<Member> for Attribute {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Attribute {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, special) = opt(delimited(
             parser::multispace_or_comment0,
@@ -134,8 +134,8 @@ impl Parser<Member> for Attribute {
     }
 }
 
-impl Parser<Member> for Operation {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Operation {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, special) = opt(delimited(
             parser::multispace_or_comment0,
@@ -155,11 +155,11 @@ impl Parser<Member> for Operation {
             // Special operations may have the arguments directly after the type and thus no
             // space afterwards, for example:
             // `getter CSSNumericValue(unsigned long index)`
-            ternary!(
-                special.is_some(),
-                parser::multispace_or_comment0,
+            if special.is_some() {
+                parser::multispace_or_comment0
+            } else {
                 parser::multispace_or_comment1
-            ),
+            },
         )(input)?;
         let (input, identifier) =
             map(opt(parser::parse_identifier), |o| o.unwrap_or_default())(input)?;
@@ -185,8 +185,8 @@ impl Parser<Member> for Operation {
     }
 }
 
-impl Parser<Member> for Constructor {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Constructor {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, _) = preceded(parser::multispace_or_comment0, tag("constructor"))(input)?;
         let (input, arguments) =
@@ -202,8 +202,8 @@ impl Parser<Member> for Constructor {
     }
 }
 
-impl Parser<Member> for Stringifer {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Stringifer {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, _) = preceded(parser::multispace_or_comment0, tag("stringifier"))(input)?;
 
@@ -211,8 +211,8 @@ impl Parser<Member> for Stringifer {
     }
 }
 
-impl Parser<Member> for Iterable {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Iterable {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, r#async) = map(
             opt(delimited(
@@ -274,8 +274,8 @@ impl Parser<Member> for Iterable {
     }
 }
 
-impl Parser<Member> for Maplike {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Maplike {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, readonly) = parse_check_is_readonly(input)?;
         let (input, _) = delimited(
@@ -311,8 +311,8 @@ impl Parser<Member> for Maplike {
     }
 }
 
-impl Parser<Member> for Setlike {
-    fn parse(input: &str) -> IResult<&str, Member> {
+impl Setlike {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Member> {
         let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
         let (input, readonly) = parse_check_is_readonly(input)?;
         let (input, _) = delimited(

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{ternary, Argument, DefaultValue, DictionaryMember, ExtendedAttribute};
+use crate::{Argument, DefaultValue, DictionaryMember, ExtendedAttribute};
 
 pub(crate) fn display_ext_attrs(ext_attrs: &Vec<ExtendedAttribute>) -> String {
     let mut result = String::new();
@@ -52,9 +52,9 @@ impl fmt::Display for Argument {
             f,
             "{}{}{}{} {}{}",
             ext_attrs_str,
-            ternary!(self.optional, "optional ", ""),
+            if self.optional { "optional " } else { "" },
             &self.r#type,
-            ternary!(self.variadic, "...", ""),
+            if self.variadic { "..." } else { "" },
             self.identifier,
             default,
         )
@@ -65,7 +65,7 @@ impl fmt::Display for DefaultValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             DefaultValue::Boolean(boolean) => {
-                write!(f, " = {}", ternary!(*boolean, "true", "false"))
+                write!(f, " = {}", if *boolean { "true" } else { "false" })
             }
             DefaultValue::Integer(integer) => write!(f, " = {}", integer),
             DefaultValue::Decimal(decimal) => write!(f, " = {}", decimal),
@@ -97,7 +97,7 @@ impl fmt::Display for DictionaryMember {
             f,
             "{}{}{} {}{};",
             ext_attrs_str,
-            ternary!(self.required, "required ", ""),
+            if self.required { "required " } else { "" },
             self.r#type,
             self.identifier,
             default,

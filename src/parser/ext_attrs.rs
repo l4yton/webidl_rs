@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 
-use crate::{parser, ExtAttrValue, ExtendedAttribute, NamedArgumentList, Parser};
+use crate::{parser, ExtAttrValue, ExtendedAttribute, NamedArgumentList};
 
 fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
     let (input, _) = terminated(tag("("), parser::multispace_or_comment0)(input)?;
@@ -24,8 +24,8 @@ fn parse_ext_attr_ident_list(input: &str) -> IResult<&str, ExtAttrValue> {
     Ok((input, ExtAttrValue::IdentifierList(identifiers)))
 }
 
-impl Parser<ExtendedAttribute> for ExtendedAttribute {
-    fn parse(input: &str) -> IResult<&str, ExtendedAttribute> {
+impl ExtendedAttribute {
+    pub(crate) fn parse(input: &str) -> IResult<&str, ExtendedAttribute> {
         let (input, identifier) = parser::parse_identifier(input)?;
         let (input, value) = opt(alt((
             preceded(
@@ -48,8 +48,8 @@ impl Parser<ExtendedAttribute> for ExtendedAttribute {
     }
 }
 
-impl Parser<ExtAttrValue> for ExtAttrValue {
-    fn parse(input: &str) -> IResult<&str, ExtAttrValue> {
+impl ExtAttrValue {
+    pub(crate) fn parse(input: &str) -> IResult<&str, ExtAttrValue> {
         alt((
             map(NamedArgumentList::parse, ExtAttrValue::NamedArgumentList),
             map(parser::parse_identifier, ExtAttrValue::Identifier),
@@ -60,8 +60,8 @@ impl Parser<ExtAttrValue> for ExtAttrValue {
     }
 }
 
-impl Parser<NamedArgumentList> for NamedArgumentList {
-    fn parse(input: &str) -> IResult<&str, NamedArgumentList> {
+impl NamedArgumentList {
+    pub(crate) fn parse(input: &str) -> IResult<&str, NamedArgumentList> {
         let (input, identifier) = parser::parse_identifier(input)?;
         let (input, arguments) =
             preceded(parser::multispace_or_comment0, parser::parse_arguments)(input)?;
