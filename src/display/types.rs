@@ -1,8 +1,10 @@
 use std::fmt;
 
+use itertools::join;
+
 use crate::{
-    display, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
-    RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
+    FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType, RecordTypeKey,
+    SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
 impl fmt::Display for Type {
@@ -23,12 +25,13 @@ impl fmt::Display for Type {
 
 impl fmt::Display for SequenceType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "sequence<{}>{}",
-            self.r#type,
-            if self.nullable { "?" } else { "" }
-        )
+        write!(f, "sequence<{}>", self.r#type,)?;
+
+        if self.nullable {
+            write!(f, "?")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -50,80 +53,70 @@ impl fmt::Display for RecordTypeKey {
 
 impl fmt::Display for UnionType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut result = String::new();
-
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        let number = self.types.len();
-        assert!(number > 1, "Found union with less than two types");
+        assert!(self.types.len() > 1, "Found union with less than two types");
+        write!(f, "({})", join(&self.types, " or "))?;
 
-        for (i, r#type) in self.types.iter().enumerate() {
-            result.push_str(&r#type.to_string());
-            if i + 1 < number {
-                result.push_str(" or ");
-            }
+        if self.nullable {
+            write!(f, "?")?;
         }
 
-        write!(
-            f,
-            "{}({}){}",
-            ext_attrs_str,
-            result,
-            if self.nullable { "?" } else { "" }
-        )
+        Ok(())
     }
 }
 
 impl fmt::Display for PromiseType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Promise<{}>{}",
-            self.r#type,
-            if self.nullable { "?" } else { "" }
-        )
+        write!(f, "Promise<{}>", self.r#type,)?;
+
+        if self.nullable {
+            write!(f, "?")?;
+        }
+
+        Ok(())
     }
 }
 
 impl fmt::Display for FrozenArrayType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "FrozenArray<{}>{}",
-            self.r#type,
-            if self.nullable { "?" } else { "" }
-        )
+        write!(f, "FrozenArray<{}>", self.r#type,)?;
+
+        if self.nullable {
+            write!(f, "?")?;
+        }
+
+        Ok(())
     }
 }
 
 impl fmt::Display for ObservableArrayType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "ObservableArray<{}>{}",
-            self.r#type,
-            if self.nullable { "?" } else { "" }
-        )
+        write!(f, "ObservableArray<{}>", self.r#type,)?;
+
+        if self.nullable {
+            write!(f, "?")?;
+        }
+
+        Ok(())
     }
 }
 
 impl fmt::Display for StandardType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}{}",
-            ext_attrs_str,
-            self.name,
-            if self.nullable { "?" } else { "" }
-        )
+        write!(f, "{}", self.name)?;
+
+        if self.nullable {
+            write!(f, "?")?;
+        }
+
+        Ok(())
     }
 }
 

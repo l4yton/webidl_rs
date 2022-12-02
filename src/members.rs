@@ -137,3 +137,8 @@ impl Member {
         }
     }
 }
+
+/* Trait implementations. */
+
+// ...
+// ...
