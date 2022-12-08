@@ -1,13 +1,14 @@
 use std::fmt;
 
-use itertools::join;
+use itertools::{join, Itertools};
 
 use crate::{
     parser, Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
     DictionaryMember, Enumeration, ExtAttrValue, ExtendedAttribute, Includes, Interface,
-    InterfaceMixin, Namespace, Typedef,
+    InterfaceMixin, NamedArgumentList, Namespace, Typedef,
 };
 
+// TODO: Find a better solution to determine if an identifier has to be in quotes.
 fn display_ext_attr_identifier(identifier: &str) -> String {
     if identifier.is_empty() {
         return "\"\"".to_string();
@@ -52,7 +53,13 @@ impl fmt::Display for Interface {
             write!(f, ": {} ", inheritance)?;
         }
 
-        write!(f, "{{\n\t{}\n}};", join(&self.members, "\n\t"))
+        write!(f, "{{")?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -66,12 +73,13 @@ impl fmt::Display for InterfaceMixin {
             write!(f, "partial ")?;
         }
 
-        write!(
-            f,
-            "interface mixin {} {{\n\t{}\n}};",
-            self.identifier,
-            join(&self.members, "\n\t")
-        )
+        write!(f, "interface mixin {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -91,12 +99,13 @@ impl fmt::Display for CallbackInterface {
             write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "callback interface {} {{\n\t{}\n}};",
-            self.identifier,
-            join(&self.members, "\n\t"),
-        )
+        write!(f, "callback interface {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -110,12 +119,13 @@ impl fmt::Display for Namespace {
             write!(f, "partial ")?;
         }
 
-        write!(
-            f,
-            "namespace {} {{\n\t{}\n}};",
-            self.identifier,
-            join(&self.members, "\n\t"),
-        )
+        write!(f, "namespace {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -135,7 +145,13 @@ impl fmt::Display for Dictionary {
             write!(f, ": {} ", inheritance)?;
         }
 
-        write!(f, "{{\n\t{}\n}};", join(&self.members, "\n\t"))
+        write!(f, "{{")?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -145,12 +161,13 @@ impl fmt::Display for Enumeration {
             write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "enum {} {{\n\t\"{}\"\n}};",
-            self.identifier,
-            join(&self.values, "\",\n\t\"")
-        )
+        write!(f, "enum {} {{", self.identifier)?;
+        if !self.values.is_empty() {
+            write!(f, "\n\t\"{}\"", join(&self.values, "\",\n\t\""))?;
+        }
+        write!(f, "\n}};")?;
+
+        Ok(())
     }
 }
 
@@ -193,8 +210,10 @@ impl fmt::Display for DictionaryMember {
         write!(f, "{} {}", self.r#type, self.identifier)?;
 
         if let Some(value) = &self.default {
-            write!(f, "{}", value)?;
+            write!(f, "= {}", value)?;
         }
+
+        write!(f, ";")?;
 
         Ok(())
     }
@@ -218,31 +237,34 @@ impl fmt::Display for ExtAttrValue {
             ExtAttrValue::ArgumentList(arguments) => {
                 write!(f, "({})", join(arguments, ", "))
             }
-            ExtAttrValue::NamedArgumentList(named_args_list) => write!(
-                f,
-                "={}({})",
-                named_args_list.identifier,
-                join(&named_args_list.arguments, ", ")
-            ),
+            ExtAttrValue::NamedArgumentList(named_args_list) => write!(f, "={}", named_args_list),
             ExtAttrValue::Identifier(identifier) => {
                 write!(f, "={}", display_ext_attr_identifier(identifier))
             }
             ExtAttrValue::IdentifierList(identifier_list) => {
-                let mut result = String::new();
-                let number = identifier_list.len();
-
-                for (i, identifier) in identifier_list.iter().enumerate() {
-                    result.push_str(&display_ext_attr_identifier(identifier));
-                    if i + 1 < number {
-                        result.push(',');
-                        result.push(' ');
-                    }
-                }
-
-                write!(f, "=({})", result)
+                write!(
+                    f,
+                    "=({})",
+                    identifier_list
+                        .iter()
+                        .map(
+                            |identifier| if identifier.chars().all(|s| s.is_ascii_alphanumeric()) {
+                                identifier.to_string()
+                            } else {
+                                format!("{:?}", identifier)
+                            }
+                        )
+                        .join(", ")
+                )
             }
             ExtAttrValue::Wildcard => write!(f, "=*"),
         }
+    }
+}
+
+impl fmt::Display for NamedArgumentList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}({})", self.identifier, join(&self.arguments, ", "))
     }
 }
 
@@ -262,7 +284,7 @@ impl fmt::Display for Argument {
             write!(f, "...")?;
         }
 
-        write!(f, "{}", self.identifier)?;
+        write!(f, " {}", self.identifier)?;
 
         if let Some(value) = &self.default {
             write!(f, " = {}", value)?;
@@ -280,7 +302,7 @@ impl fmt::Display for DefaultValue {
             }
             DefaultValue::Integer(integer) => write!(f, "{}", integer),
             DefaultValue::Decimal(decimal) => write!(f, "{}", decimal),
-            DefaultValue::String(string) => write!(f, "{:?}", string,),
+            DefaultValue::String(string) => write!(f, "{:?}", string),
             DefaultValue::Null => write!(f, "null"),
             DefaultValue::Infinity => write!(f, "Infinity"),
             DefaultValue::NegativeInfinity => write!(f, "-Infinity"),

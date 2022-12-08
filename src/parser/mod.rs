@@ -1,7 +1,6 @@
 mod definitions;
-mod ext_attrs;
 mod members;
-mod other;
 mod types;
+mod utils;
 
-pub(crate) use other::*;
+pub(crate) use utils::*;

@@ -25,7 +25,7 @@ impl fmt::Display for Type {
 
 impl fmt::Display for SequenceType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "sequence<{}>", self.r#type,)?;
+        write!(f, "sequence<{}>", self.r#type)?;
 
         if self.nullable {
             write!(f, "?")?;
@@ -57,7 +57,6 @@ impl fmt::Display for UnionType {
             write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        assert!(self.types.len() > 1, "Found union with less than two types");
         write!(f, "({})", join(&self.types, " or "))?;
 
         if self.nullable {
