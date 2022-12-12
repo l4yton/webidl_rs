@@ -17,8 +17,25 @@ mod parser;
 #[cfg(test)]
 mod tests;
 
-/* Exposed utility functions */
-mod utils;
+/* Exposed functions */
+use itertools::join;
+use nom::{
+    combinator::eof,
+    error::Error,
+    multi::many0,
+    sequence::{preceded, terminated},
+    Err,
+};
 
-pub use utils::parse;
-pub use utils::to_string;
+pub fn parse(input: &str) -> Result<Vec<Definition>, Err<Error<String>>> {
+    Ok(terminated(
+        many0(Definition::parse),
+        preceded(parser::multispace_or_comment0, eof),
+    )(input)
+    .map_err(|e| e.to_owned())?
+    .1)
+}
+
+pub fn to_string(definitions: &[Definition]) -> String {
+    join(definitions, "\n\n")
+}

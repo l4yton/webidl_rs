@@ -57,9 +57,7 @@ impl fmt::Display for Interface {
         if !self.members.is_empty() {
             write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -77,9 +75,7 @@ impl fmt::Display for InterfaceMixin {
         if !self.members.is_empty() {
             write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -103,9 +99,7 @@ impl fmt::Display for CallbackInterface {
         if !self.members.is_empty() {
             write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -123,9 +117,7 @@ impl fmt::Display for Namespace {
         if !self.members.is_empty() {
             write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -149,9 +141,7 @@ impl fmt::Display for Dictionary {
         if !self.members.is_empty() {
             write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -165,9 +155,7 @@ impl fmt::Display for Enumeration {
         if !self.values.is_empty() {
             write!(f, "\n\t\"{}\"", join(&self.values, "\",\n\t\""))?;
         }
-        write!(f, "\n}};")?;
-
-        Ok(())
+        write!(f, "\n}};")
     }
 }
 
@@ -193,7 +181,7 @@ impl fmt::Display for Typedef {
             write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(f, "typedef {} {};", self.r#type, self.identifier,)
+        write!(f, "typedef {} {};", self.r#type, self.identifier)
     }
 }
 
@@ -213,9 +201,7 @@ impl fmt::Display for DictionaryMember {
             write!(f, "= {}", value)?;
         }
 
-        write!(f, ";")?;
-
-        Ok(())
+        write!(f, ";")
     }
 }
 

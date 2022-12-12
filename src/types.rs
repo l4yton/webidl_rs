@@ -112,12 +112,12 @@ pub enum PrimitiveType {
     Float64Array,
 }
 
-/* Functionality implementations. */
+/* Functionality implementations */
 
 // ...
 // ...
 
-/* Trait implementations. */
+/* Trait implementations */
 
 impl From<String> for Type {
     fn from(identifier: String) -> Self {
