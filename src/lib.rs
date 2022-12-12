@@ -1,4 +1,4 @@
-/* Web IDL data structures. */
+/* Web IDL data structures */
 mod consts;
 mod definitions;
 mod members;
@@ -9,11 +9,15 @@ pub use definitions::*;
 pub use members::*;
 pub use types::*;
 
-/* Display and parser logic. */
+/* Display and parser logic */
 mod display;
 mod parser;
 
-/* Exposed utility functions. */
+/* Tests */
+#[cfg(test)]
+mod tests;
+
+/* Exposed utility functions */
 mod utils;
 
 pub use utils::parse;
