@@ -198,7 +198,7 @@ impl fmt::Display for DictionaryMember {
         write!(f, "{} {}", self.r#type, self.identifier)?;
 
         if let Some(value) = &self.default {
-            write!(f, "= {}", value)?;
+            write!(f, " = {}", value)?;
         }
 
         write!(f, ";")
