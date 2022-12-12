@@ -140,7 +140,7 @@ pub enum DefaultValue {
     Dictionary,
 }
 
-/* Functionality implementations. */
+/* Functionality implementations */
 
 impl Definition {
     pub fn get_identifier(&self) -> Option<&str> {
@@ -195,3 +195,8 @@ impl Definition {
         }
     }
 }
+
+/* Trait implementations */
+
+// ...
+// ...

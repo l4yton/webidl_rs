@@ -1,60 +1,24 @@
 use std::fmt;
 
+use itertools::{join, Itertools};
+
 use crate::{
-    display, CallbackFunction, CallbackInterface, Definition, Dictionary, DictionaryMember,
-    Enumeration, Includes, Interface, InterfaceMixin, Member, Namespace, Typedef,
+    parser, Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
+    DictionaryMember, Enumeration, ExtAttrValue, ExtendedAttribute, Includes, Interface,
+    InterfaceMixin, NamedArgumentList, Namespace, Typedef,
 };
 
-fn display_inheritance(inheritance: &Option<String>) -> String {
-    let mut result = String::new();
-    if let Some(inheritance) = inheritance {
-        result.push(':');
-        result.push(' ');
-        result.push_str(inheritance);
-        result.push(' ');
+// TODO: Find a better solution to determine if an identifier has to be in quotes.
+fn display_ext_attr_identifier(identifier: &str) -> String {
+    if identifier.is_empty() {
+        return "\"\"".to_string();
     }
 
-    result
-}
-
-fn display_members(members: &[Member]) -> String {
-    let mut result = String::new();
-    for member in members {
-        result.push('\t');
-        result.push_str(&member.to_string());
-        result.push('\n');
+    if parser::parse_identifier(identifier).is_ok() {
+        return identifier.to_string();
     }
 
-    result
-}
-
-fn display_dictionary_members(members: &[DictionaryMember]) -> String {
-    let mut result = String::new();
-    for member in members {
-        result.push('\t');
-        result.push_str(&member.to_string());
-        result.push('\n');
-    }
-
-    result
-}
-
-fn display_enum_values(values: &Vec<String>) -> String {
-    let mut result = String::new();
-    let number = values.len();
-
-    for (i, value) in values.iter().enumerate() {
-        result.push('\t');
-        result.push('"');
-        result.push_str(&value.to_string());
-        result.push('"');
-        if i + 1 < number {
-            result.push(',');
-        }
-        result.push('\n');
-    }
-
-    result
+    format!("\"{}\"", identifier)
 }
 
 impl fmt::Display for Definition {
@@ -75,156 +39,263 @@ impl fmt::Display for Definition {
 
 impl fmt::Display for Interface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}interface {} {}{{\n{}}};",
-            ext_attrs_str,
-            if self.partial { "partial " } else { "" },
-            self.identifier,
-            display_inheritance(&self.inheritance),
-            display_members(&self.members),
-        )
+        if self.partial {
+            write!(f, "partial ")?;
+        }
+
+        write!(f, "interface {} ", self.identifier)?;
+
+        if let Some(inheritance) = &self.inheritance {
+            write!(f, ": {} ", inheritance)?;
+        }
+
+        write!(f, "{{")?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for InterfaceMixin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}interface mixin {} {{\n{}}};",
-            ext_attrs_str,
-            if self.partial { "partial " } else { "" },
-            self.identifier,
-            display_members(&self.members),
-        )
+        if self.partial {
+            write!(f, "partial ")?;
+        }
+
+        write!(f, "interface mixin {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for Includes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{} includes {};",
-            ext_attrs_str, self.interface, self.mixin
-        )
+        write!(f, "{} includes {};", self.interface, self.mixin)
     }
 }
 
 impl fmt::Display for CallbackInterface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}callback interface {} {{\n{}}};",
-            ext_attrs_str,
-            self.identifier,
-            display_members(&self.members),
-        )
+        write!(f, "callback interface {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}namespace {} {{\n{}}};",
-            ext_attrs_str,
-            if self.partial { "partial " } else { "" },
-            self.identifier,
-            display_members(&self.members),
-        )
+        if self.partial {
+            write!(f, "partial ")?;
+        }
+
+        write!(f, "namespace {} {{", self.identifier)?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for Dictionary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}dictionary {} {}{{\n{}}};",
-            ext_attrs_str,
-            if self.partial { "partial " } else { "" },
-            self.identifier,
-            display_inheritance(&self.inheritance),
-            display_dictionary_members(&self.members),
-        )
+        if self.partial {
+            write!(f, "partial ")?;
+        }
+
+        write!(f, "dictionary {} ", self.identifier)?;
+
+        if let Some(inheritance) = &self.inheritance {
+            write!(f, ": {} ", inheritance)?;
+        }
+
+        write!(f, "{{")?;
+        if !self.members.is_empty() {
+            write!(f, "\n\t{}", join(&self.members, "\n\t"))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for Enumeration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}enum {} {{\n{}}};",
-            ext_attrs_str,
-            self.identifier,
-            display_enum_values(&self.values)
-        )
+        write!(f, "enum {} {{", self.identifier)?;
+        if !self.values.is_empty() {
+            write!(f, "\n\t\"{}\"", join(&self.values, "\",\n\t\""))?;
+        }
+        write!(f, "\n}};")
     }
 }
 
 impl fmt::Display for CallbackFunction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
         write!(
             f,
-            "{}callback {} = {} ({});",
-            ext_attrs_str,
+            "callback {} = {} ({});",
             self.identifier,
             self.r#type,
-            display::display_arguments(&self.arguments)
+            join(&self.arguments, ", ")
         )
     }
 }
 
 impl fmt::Display for Typedef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push('\n');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}typedef {} {};",
-            ext_attrs_str, self.r#type, self.identifier,
-        )
+        write!(f, "typedef {} {};", self.r#type, self.identifier)
+    }
+}
+
+impl fmt::Display for DictionaryMember {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+        }
+
+        if self.required {
+            write!(f, "required ")?;
+        }
+
+        write!(f, "{} {}", self.r#type, self.identifier)?;
+
+        if let Some(value) = &self.default {
+            write!(f, " = {}", value)?;
+        }
+
+        write!(f, ";")
+    }
+}
+
+impl fmt::Display for ExtendedAttribute {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(value) = &self.value {
+            // Don't put the equal sign between identifier and value here, because
+            // `ExtAttrValue::ArgumentList` doesn't have one.
+            return write!(f, "{}{}", self.identifier, value);
+        }
+
+        write!(f, "{}", self.identifier)
+    }
+}
+
+impl fmt::Display for ExtAttrValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ExtAttrValue::ArgumentList(arguments) => {
+                write!(f, "({})", join(arguments, ", "))
+            }
+            ExtAttrValue::NamedArgumentList(named_args_list) => write!(f, "={}", named_args_list),
+            ExtAttrValue::Identifier(identifier) => {
+                write!(f, "={}", display_ext_attr_identifier(identifier))
+            }
+            ExtAttrValue::IdentifierList(identifier_list) => {
+                write!(
+                    f,
+                    "=({})",
+                    identifier_list
+                        .iter()
+                        .map(
+                            |identifier| if identifier.chars().all(|s| s.is_ascii_alphanumeric()) {
+                                identifier.to_string()
+                            } else {
+                                format!("{:?}", identifier)
+                            }
+                        )
+                        .join(", ")
+                )
+            }
+            ExtAttrValue::Wildcard => write!(f, "=*"),
+        }
+    }
+}
+
+impl fmt::Display for NamedArgumentList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}({})", self.identifier, join(&self.arguments, ", "))
+    }
+}
+
+impl fmt::Display for Argument {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+        }
+
+        if self.optional {
+            write!(f, "optional ")?;
+        }
+
+        write!(f, "{}", self.r#type)?;
+
+        if self.variadic {
+            write!(f, "...")?;
+        }
+
+        write!(f, " {}", self.identifier)?;
+
+        if let Some(value) = &self.default {
+            write!(f, " = {}", value)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl fmt::Display for DefaultValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DefaultValue::Boolean(boolean) => {
+                write!(f, "{}", if *boolean { "true" } else { "false" })
+            }
+            DefaultValue::Integer(integer) => write!(f, "{}", integer),
+            DefaultValue::Decimal(decimal) => write!(f, "{}", decimal),
+            DefaultValue::String(string) => write!(f, "{:?}", string),
+            DefaultValue::Null => write!(f, "null"),
+            DefaultValue::Infinity => write!(f, "Infinity"),
+            DefaultValue::NegativeInfinity => write!(f, "-Infinity"),
+            DefaultValue::NaN => write!(f, "NaN"),
+            DefaultValue::Undefined => write!(f, "undefined"),
+            DefaultValue::Sequence => write!(f, "[]"),
+            DefaultValue::Dictionary => write!(f, "{{}}"),
+        }
     }
 }

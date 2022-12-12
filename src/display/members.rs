@@ -1,7 +1,9 @@
 use std::fmt;
 
+use itertools::join;
+
 use crate::{
-    display, AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
+    AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
     OpSpecial, Operation, Setlike, Stringifer,
 };
 
@@ -22,15 +24,14 @@ impl fmt::Display for Member {
 
 impl fmt::Display for Constant {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
         write!(
             f,
-            "{}const {} {} = {};",
-            ext_attrs_str, self.r#type, self.identifier, self.value,
+            "const {} {} = {};",
+            self.r#type, self.identifier, self.value,
         )
     }
 }
@@ -52,147 +53,127 @@ impl fmt::Display for ConstValue {
 
 impl fmt::Display for Attribute {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
-        let special_str = if let Some(special) = &self.special {
-            match special {
-                AttrSpecial::Inherit => "inherit ",
-                AttrSpecial::Static => "static ",
-                AttrSpecial::Stringifier => "stringifier ",
-            }
-        } else {
-            ""
-        };
 
-        write!(
-            f,
-            "{}{}{}attribute {} {};",
-            ext_attrs_str,
-            special_str,
-            if self.readonly { "readonly " } else { "" },
-            self.r#type,
-            self.identifier
-        )
+        if let Some(special) = &self.special {
+            write!(f, "{} ", special)?;
+        }
+
+        if self.readonly {
+            write!(f, "readonly ")?;
+        }
+
+        write!(f, "attribute {} {};", self.r#type, self.identifier)
+    }
+}
+
+impl fmt::Display for AttrSpecial {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AttrSpecial::Inherit => write!(f, "inherit"),
+            AttrSpecial::Static => write!(f, "static"),
+            AttrSpecial::Stringifier => write!(f, "stringifier"),
+        }
     }
 }
 
 impl fmt::Display for Operation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
-        let special_str = if let Some(special) = &self.special {
-            match special {
-                OpSpecial::Static => "static ",
-                OpSpecial::Getter => "getter ",
-                OpSpecial::Setter => "setter ",
-                OpSpecial::Deleter => "deleter ",
-            }
-        } else {
-            ""
-        };
+
+        if let Some(special) = &self.special {
+            write!(f, "{} ", special)?;
+        }
 
         write!(
             f,
-            "{}{}{} {}({});",
-            ext_attrs_str,
-            special_str,
+            "{} {}({});",
             self.r#type,
             self.identifier,
-            display::display_arguments(&self.arguments)
+            join(&self.arguments, ", ")
         )
+    }
+}
+
+impl fmt::Display for OpSpecial {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OpSpecial::Static => write!(f, "static"),
+            OpSpecial::Getter => write!(f, "getter"),
+            OpSpecial::Setter => write!(f, "setter"),
+            OpSpecial::Deleter => write!(f, "deleter"),
+        }
     }
 }
 
 impl fmt::Display for Constructor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}constructor({});",
-            ext_attrs_str,
-            display::display_arguments(&self.arguments),
-        )
+        write!(f, "constructor({});", join(&self.arguments, ", "),)
     }
 }
 
 impl fmt::Display for Stringifer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(f, "{}stringifier;", ext_attrs_str)
+        write!(f, "stringifier;")
     }
 }
 
 impl fmt::Display for Iterable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
+
+        if self.r#async {
+            write!(f, "async ")?;
+        }
+
+        write!(f, "iterable<")?;
 
         if let Some(key_type) = &self.key_type {
-            return write!(
-                f,
-                "{}{}iterable<{}, {}>;",
-                ext_attrs_str,
-                if self.r#async { "async " } else { "" },
-                key_type,
-                self.value_type
-            );
+            write!(f, "{}, ", key_type)?;
         }
 
-        write!(
-            f,
-            "{}{}iterable<{}>;",
-            ext_attrs_str,
-            if self.r#async { "async " } else { "" },
-            self.value_type
-        )
+        write!(f, "{}>;", self.value_type)
     }
 }
 
 impl fmt::Display for Maplike {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}maplike<{}, {}>;",
-            ext_attrs_str,
-            if self.readonly { "readonly " } else { "" },
-            self.key_type,
-            self.value_type
-        )
+        if self.readonly {
+            write!(f, "readonly ")?;
+        }
+
+        write!(f, "maplike<{}, {}>;", self.key_type, self.value_type)
     }
 }
 
 impl fmt::Display for Setlike {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut ext_attrs_str = display::display_ext_attrs(&self.ext_attrs);
-        if !ext_attrs_str.is_empty() {
-            ext_attrs_str.push(' ');
+        if !self.ext_attrs.is_empty() {
+            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
         }
 
-        write!(
-            f,
-            "{}{}setlike<{}>;",
-            ext_attrs_str,
-            if self.readonly { "readonly " } else { "" },
-            self.r#type,
-        )
+        if self.readonly {
+            write!(f, "readonly ")?;
+        }
+
+        write!(f, "setlike<{}>;", self.r#type,)
     }
 }

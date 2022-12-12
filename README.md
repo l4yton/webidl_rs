@@ -32,6 +32,6 @@ fn main() {
 
 ## TODO
 - [ ] Better documentation
-- [ ] Add tests
+- [ ] Add more tests
 - [ ] Replace asserts with custom errors in parser
 - [ ] Validate Web IDL semantically (more)

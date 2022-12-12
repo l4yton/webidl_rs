@@ -8,19 +8,19 @@ use nom::{
 };
 
 use crate::{
-    parser, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType, RecordType,
-    RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
+    parser, ExtendedAttribute, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType,
+    RecordType, RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
 fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, Type> {
     delimited(
-        delimited(tag(name), parser::multispace_or_comment0, tag("<")),
         delimited(
             parser::multispace_or_comment0,
-            Type::parse,
-            parser::multispace_or_comment0,
+            tag(name),
+            preceded(parser::multispace_or_comment0, tag("<")),
         ),
-        tag(">"),
+        Type::parse,
+        preceded(parser::multispace_or_comment0, tag(">")),
     )(input)
 }
 
@@ -56,21 +56,14 @@ impl SequenceType {
 impl RecordType {
     pub(crate) fn parse(input: &str) -> IResult<&str, RecordType> {
         let (input, (key, value)) = delimited(
-            delimited(tag("record"), parser::multispace_or_comment0, tag("<")),
+            delimited(
+                preceded(parser::multispace_or_comment0, tag("record")),
+                parser::multispace_or_comment0,
+                tag("<"),
+            ),
             separated_pair(
-                preceded(
-                    parser::multispace_or_comment0,
-                    alt((
-                        map(tag("DOMString"), |_| RecordTypeKey::DOMString),
-                        map(tag("USVString"), |_| RecordTypeKey::USVString),
-                        map(tag("ByteString"), |_| RecordTypeKey::ByteString),
-                    )),
-                ),
-                delimited(
-                    parser::multispace_or_comment0,
-                    tag(","),
-                    parser::multispace_or_comment0,
-                ),
+                RecordTypeKey::parse,
+                preceded(parser::multispace_or_comment0, tag(",")),
                 Type::parse,
             ),
             preceded(parser::multispace_or_comment0, tag(">")),
@@ -86,9 +79,22 @@ impl RecordType {
     }
 }
 
+impl RecordTypeKey {
+    pub(crate) fn parse(input: &str) -> IResult<&str, RecordTypeKey> {
+        preceded(
+            parser::multispace_or_comment0,
+            alt((
+                map(tag("DOMString"), |_| RecordTypeKey::DOMString),
+                map(tag("USVString"), |_| RecordTypeKey::USVString),
+                map(tag("ByteString"), |_| RecordTypeKey::ByteString),
+            )),
+        )(input)
+    }
+}
+
 impl UnionType {
     pub(crate) fn parse(input: &str) -> IResult<&str, UnionType> {
-        let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, types) = delimited(
             delimited(
                 parser::multispace_or_comment0,
@@ -168,9 +174,8 @@ impl ObservableArrayType {
 
 impl StandardType {
     pub(crate) fn parse(input: &str) -> IResult<&str, StandardType> {
-        let (input, ext_attrs) = parser::parse_ext_attrs(input)?;
-        let (input, name) =
-            preceded(parser::multispace_or_comment0, StandardTypeName::parse)(input)?;
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
+        let (input, name) = StandardTypeName::parse(input)?;
         let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
 
         Ok((
@@ -186,10 +191,13 @@ impl StandardType {
 
 impl StandardTypeName {
     pub(crate) fn parse(input: &str) -> IResult<&str, StandardTypeName> {
-        alt((
-            map(PrimitiveType::parse, StandardTypeName::Primitive),
-            map(parser::parse_identifier, StandardTypeName::Identifier),
-        ))(input)
+        preceded(
+            parser::multispace_or_comment0,
+            alt((
+                map(PrimitiveType::parse, StandardTypeName::Primitive),
+                map(parser::parse_identifier, StandardTypeName::Identifier),
+            )),
+        )(input)
     }
 }
 
