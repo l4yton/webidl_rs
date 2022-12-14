@@ -10,15 +10,11 @@ use crate::{
 
 // TODO: Find a better solution to determine if an identifier has to be in quotes.
 fn display_ext_attr_identifier(identifier: &str) -> String {
-    if identifier.is_empty() {
-        return "\"\"".to_string();
-    }
-
     if parser::parse_identifier(identifier).is_ok() {
         return identifier.to_string();
     }
 
-    format!("\"{}\"", identifier)
+    format!("{:?}", identifier)
 }
 
 impl fmt::Display for Definition {

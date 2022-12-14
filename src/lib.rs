@@ -1,10 +1,8 @@
 /* Web IDL data structures */
-mod consts;
 mod definitions;
 mod members;
 mod types;
 
-pub use consts::*;
 pub use definitions::*;
 pub use members::*;
 pub use types::*;

@@ -1,6 +1,6 @@
-use std::{fmt, fs, path::Path};
+use std::fs;
 
-pub(super) fn load_test_file<T: AsRef<Path> + fmt::Display>(name: T) -> String {
+pub(super) fn load_test_file(name: &str) -> String {
     fs::read_to_string(&format!(
         "{}/resources/{}",
         env!("CARGO_MANIFEST_DIR"),
