@@ -46,18 +46,16 @@ pub(crate) fn parse_quoted_string(input: &str) -> IResult<&str, String> {
     )(input)
 }
 
-/// Checks if there is the string |attribute| followed by whitespace or a comment.
-/// The |attribute| may be "partial", "required" and so on.
 pub(crate) fn parse_is_some_attribute<'a>(
     input: &'a str,
     attribute: &str,
 ) -> IResult<&'a str, bool> {
     map(
-        opt(delimited(
+        opt(tuple((
             multispace_or_comment0,
             tag(attribute),
             multispace_or_comment1,
-        )),
+        ))),
         |o| o.is_some(),
     )(input)
 }

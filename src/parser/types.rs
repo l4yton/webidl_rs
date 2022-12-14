@@ -3,7 +3,7 @@ use nom::{
     bytes::complete::{tag, take_while_m_n},
     combinator::{map, not, opt, peek},
     multi::separated_list1,
-    sequence::{delimited, preceded, separated_pair, terminated},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
@@ -14,13 +14,14 @@ use crate::{
 
 fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, Type> {
     delimited(
-        delimited(
+        tuple((
             parser::multispace_or_comment0,
             tag(name),
-            preceded(parser::multispace_or_comment0, tag("<")),
-        ),
+            parser::multispace_or_comment0,
+            tag("<"),
+        )),
         Type::parse,
-        preceded(parser::multispace_or_comment0, tag(">")),
+        tuple((parser::multispace_or_comment0, tag(">"))),
     )(input)
 }
 
@@ -41,7 +42,10 @@ impl Type {
 impl SequenceType {
     pub(crate) fn parse(input: &str) -> IResult<&str, SequenceType> {
         let (input, r#type) = parse_parameterized_type(input, "sequence")?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,
@@ -56,17 +60,18 @@ impl SequenceType {
 impl RecordType {
     pub(crate) fn parse(input: &str) -> IResult<&str, RecordType> {
         let (input, (key, value)) = delimited(
-            delimited(
-                preceded(parser::multispace_or_comment0, tag("record")),
+            tuple((
+                parser::multispace_or_comment0,
+                tag("record"),
                 parser::multispace_or_comment0,
                 tag("<"),
-            ),
+            )),
             separated_pair(
                 RecordTypeKey::parse,
-                preceded(parser::multispace_or_comment0, tag(",")),
+                tuple((parser::multispace_or_comment0, tag(","))),
                 Type::parse,
             ),
-            preceded(parser::multispace_or_comment0, tag(">")),
+            tuple((parser::multispace_or_comment0, tag(">"))),
         )(input)?;
 
         Ok((
@@ -96,25 +101,25 @@ impl UnionType {
     pub(crate) fn parse(input: &str) -> IResult<&str, UnionType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, types) = delimited(
-            delimited(
+            tuple((
                 parser::multispace_or_comment0,
                 tag("("),
                 parser::multispace_or_comment0,
-            ),
+            )),
             separated_list1(
-                delimited(
+                tuple((
                     parser::multispace_or_comment1,
                     tag("or"),
                     parser::multispace_or_comment1,
-                ),
+                )),
                 Type::parse,
             ),
-            preceded(parser::multispace_or_comment0, tag(")")),
+            tuple((parser::multispace_or_comment0, tag(")"))),
         )(input)?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
-
-        // TODO; return error instead.
-        assert!(types.len() > 1, "Found union with only a single type");
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,
@@ -130,7 +135,10 @@ impl UnionType {
 impl PromiseType {
     pub(crate) fn parse(input: &str) -> IResult<&str, PromiseType> {
         let (input, r#type) = parse_parameterized_type(input, "Promise")?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,
@@ -145,7 +153,10 @@ impl PromiseType {
 impl FrozenArrayType {
     pub(crate) fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,
@@ -160,7 +171,10 @@ impl FrozenArrayType {
 impl ObservableArrayType {
     pub(crate) fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,
@@ -176,7 +190,10 @@ impl StandardType {
     pub(crate) fn parse(input: &str) -> IResult<&str, StandardType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, name) = StandardTypeName::parse(input)?;
-        let (input, nullable) = map(opt(tag("?")), |o| o.is_some())(input)?;
+        let (input, nullable) = map(
+            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            |o| o.is_some(),
+        )(input)?;
 
         Ok((
             input,

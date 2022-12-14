@@ -19,21 +19,16 @@ mod tests;
 
 /* Exposed functions */
 use itertools::join;
-use nom::{
-    combinator::eof,
-    error::Error,
-    multi::many0,
-    sequence::{preceded, terminated},
-    Err,
-};
+use nom::{combinator::all_consuming, error::Error, multi::many0, sequence::terminated, Err};
 
 pub fn parse(input: &str) -> Result<Vec<Definition>, Err<Error<String>>> {
-    Ok(terminated(
+    let (_, definitions) = all_consuming(terminated(
         many0(Definition::parse),
-        preceded(parser::multispace_or_comment0, eof),
-    )(input)
-    .map_err(|e| e.to_owned())?
-    .1)
+        parser::multispace_or_comment0,
+    ))(input)
+    .map_err(|e| e.to_owned())?;
+
+    Ok(definitions)
 }
 
 pub fn to_string(definitions: &[Definition]) -> String {

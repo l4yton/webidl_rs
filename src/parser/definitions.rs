@@ -5,7 +5,7 @@ use nom::{
     combinator::{map, map_res, not, opt, peek},
     multi::{many0, separated_list0},
     number::complete::float,
-    sequence::{delimited, preceded, separated_pair, terminated},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
@@ -15,56 +15,55 @@ use crate::{
     InterfaceMixin, Member, NamedArgumentList, Namespace, Type, Typedef,
 };
 
-/// Checks if there is any inheritance specified (e.g.: `: Foo `). Returns the identifier of the
-/// inherited definition.
 fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<String>> {
     opt(preceded(
-        delimited(
+        tuple((
             parser::multispace_or_comment0,
             tag(":"),
             parser::multispace_or_comment0,
-        ),
+        )),
         parser::parse_identifier,
     ))(input)
 }
 
-/// Parses the following: `|name| <identifier>` and returns `<identifier>`.
 fn parse_identifier_for_definition<'a>(input: &'a str, name: &str) -> IResult<&'a str, String> {
     preceded(
-        delimited(
+        tuple((
             parser::multispace_or_comment0,
             tag(name),
             parser::multispace_or_comment1,
-        ),
+        )),
         parser::parse_identifier,
     )(input)
 }
 
 impl Definition {
     pub fn parse(input: &str) -> IResult<&str, Definition> {
-        alt((
-            map(Interface::parse, Definition::Interface),
-            map(InterfaceMixin::parse, Definition::InterfaceMixin),
-            map(Includes::parse, Definition::Includes),
-            map(CallbackInterface::parse, Definition::CallbackInterface),
-            map(Namespace::parse, Definition::Namespace),
-            map(Dictionary::parse, Definition::Dictionary),
-            map(Enumeration::parse, Definition::Enumeration),
-            map(CallbackFunction::parse, Definition::CallbackFunction),
-            map(Typedef::parse, Definition::Typedef),
-        ))(input)
+        terminated(
+            alt((
+                map(Interface::parse, Definition::Interface),
+                map(InterfaceMixin::parse, Definition::InterfaceMixin),
+                map(Includes::parse, Definition::Includes),
+                map(CallbackInterface::parse, Definition::CallbackInterface),
+                map(Namespace::parse, Definition::Namespace),
+                map(Dictionary::parse, Definition::Dictionary),
+                map(Enumeration::parse, Definition::Enumeration),
+                map(CallbackFunction::parse, Definition::CallbackFunction),
+                map(Typedef::parse, Definition::Typedef),
+            )),
+            tuple((parser::multispace_or_comment0, tag(";"))),
+        )(input)
     }
 }
 
 impl Interface {
-    pub fn parse(input: &str) -> IResult<&str, Interface> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Interface> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
         let (input, identifier) = parse_identifier_for_definition(input, "interface")?;
         let (input, inheritance) = parse_optional_inheritance(input)?;
         let (input, members) = Member::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Interface {
@@ -79,13 +78,12 @@ impl Interface {
 }
 
 impl InterfaceMixin {
-    pub fn parse(input: &str) -> IResult<&str, InterfaceMixin> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, InterfaceMixin> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
         let (input, identifier) = parse_identifier_for_definition(input, "interface mixin")?;
         let (input, members) = Member::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             InterfaceMixin {
@@ -99,22 +97,21 @@ impl InterfaceMixin {
 }
 
 impl Includes {
-    pub fn parse(input: &str) -> IResult<&str, Includes> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Includes> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, (interface, mixin)) = preceded(
             parser::multispace_or_comment0,
             separated_pair(
                 parser::parse_identifier,
-                delimited(
+                tuple((
                     parser::multispace_or_comment1,
                     tag("includes"),
                     parser::multispace_or_comment1,
-                ),
+                )),
                 parser::parse_identifier,
             ),
         )(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Includes {
@@ -127,12 +124,11 @@ impl Includes {
 }
 
 impl CallbackInterface {
-    pub fn parse(input: &str) -> IResult<&str, CallbackInterface> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, CallbackInterface> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, identifier) = parse_identifier_for_definition(input, "callback interface")?;
         let (input, members) = Member::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             CallbackInterface {
@@ -145,13 +141,12 @@ impl CallbackInterface {
 }
 
 impl Namespace {
-    pub fn parse(input: &str) -> IResult<&str, Namespace> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Namespace> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
         let (input, identifier) = parse_identifier_for_definition(input, "namespace")?;
         let (input, members) = Member::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Namespace {
@@ -165,14 +160,13 @@ impl Namespace {
 }
 
 impl Dictionary {
-    pub fn parse(input: &str) -> IResult<&str, Dictionary> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Dictionary> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
         let (input, identifier) = parse_identifier_for_definition(input, "dictionary")?;
         let (input, inheritance) = parse_optional_inheritance(input)?;
         let (input, members) = DictionaryMember::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Dictionary {
@@ -187,11 +181,11 @@ impl Dictionary {
 }
 
 impl Enumeration {
-    pub fn parse(input: &str) -> IResult<&str, Enumeration> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Enumeration> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, identifier) = parse_identifier_for_definition(input, "enum")?;
         let (input, values) = delimited(
-            preceded(parser::multispace_or_comment0, tag("{")),
+            tuple((parser::multispace_or_comment0, tag("{"))),
             separated_list0(
                 tag(","),
                 delimited(
@@ -200,15 +194,14 @@ impl Enumeration {
                     parser::multispace_or_comment0,
                 ),
             ),
-            delimited(
-                // This is just in case the last value has a comma at the end.
-                opt(preceded(parser::multispace_or_comment0, tag(","))),
+            tuple((
                 parser::multispace_or_comment0,
+                // This is just in case the last value has a comma at the end.
+                opt(tuple((tag(","), parser::multispace_or_comment0))),
                 tag("}"),
-            ),
+            )),
         )(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Enumeration {
@@ -221,16 +214,15 @@ impl Enumeration {
 }
 
 impl CallbackFunction {
-    pub fn parse(input: &str) -> IResult<&str, CallbackFunction> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, CallbackFunction> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, identifier) = parse_identifier_for_definition(input, "callback")?;
         let (input, r#type) = preceded(
-            preceded(parser::multispace_or_comment1, tag("=")),
+            tuple((parser::multispace_or_comment1, tag("="))),
             Type::parse,
         )(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             CallbackFunction {
@@ -244,20 +236,19 @@ impl CallbackFunction {
 }
 
 impl Typedef {
-    pub fn parse(input: &str) -> IResult<&str, Typedef> {
+    pub(crate) fn parse(input: &str) -> IResult<&str, Typedef> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, r#type) = preceded(
-            delimited(
+            tuple((
                 parser::multispace_or_comment0,
                 tag("typedef"),
                 parser::multispace_or_comment1,
-            ),
+            )),
             Type::parse,
         )(input)?;
         let (input, identifier) =
             preceded(parser::multispace_or_comment1, parser::parse_identifier)(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
         Ok((
             input,
             Typedef {
@@ -276,11 +267,11 @@ impl DictionaryMember {
         let (input, r#type) = terminated(Type::parse, parser::multispace_or_comment1)(input)?;
         let (input, identifier) = parser::parse_identifier(input)?;
         let (input, default) = opt(preceded(
-            preceded(parser::multispace_or_comment0, tag("=")),
+            tuple((parser::multispace_or_comment0, tag("="))),
             DefaultValue::parse,
         ))(input)?;
 
-        let (input, _) = preceded(parser::multispace_or_comment0, tag(";"))(input)?;
+        let (input, _) = tuple((parser::multispace_or_comment0, tag(";")))(input)?;
         Ok((
             input,
             DictionaryMember {
@@ -308,7 +299,7 @@ impl ExtendedAttribute {
             preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
         let (input, value) = opt(alt((
             preceded(
-                preceded(parser::multispace_or_comment0, tag("=")),
+                tuple((parser::multispace_or_comment0, tag("="))),
                 ExtAttrValue::parse,
             ),
             // This is deprecated, but was used by: `Constructor(double x, double y)`.
@@ -322,12 +313,9 @@ impl ExtendedAttribute {
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<ExtendedAttribute>> {
         map(
             opt(delimited(
-                preceded(parser::multispace_or_comment0, tag("[")),
-                separated_list0(
-                    tag(","),
-                    terminated(Self::parse, parser::multispace_or_comment0),
-                ),
-                preceded(parser::multispace_or_comment0, tag("]")),
+                tuple((parser::multispace_or_comment0, tag("["))),
+                separated_list0(tag(","), Self::parse),
+                tuple((parser::multispace_or_comment0, tag("]"))),
             )),
             |o| o.unwrap_or_default(),
         )(input)
@@ -340,17 +328,19 @@ impl ExtAttrValue {
             parser::multispace_or_comment0,
             alt((
                 map(NamedArgumentList::parse, ExtAttrValue::NamedArgumentList),
-                map(parser::parse_identifier, ExtAttrValue::Identifier),
+                map(
+                    alt((parser::parse_identifier, parser::parse_quoted_string)),
+                    ExtAttrValue::Identifier,
+                ),
                 map(Self::parse_identifier_list, ExtAttrValue::IdentifierList),
                 map(tag("*"), |_| ExtAttrValue::Wildcard),
-                map(parser::parse_quoted_string, ExtAttrValue::Identifier),
             )),
         )(input)
     }
 
     fn parse_identifier_list(input: &str) -> IResult<&str, Vec<String>> {
         delimited(
-            preceded(parser::multispace_or_comment0, tag("(")),
+            tuple((parser::multispace_or_comment0, tag("("))),
             separated_list0(
                 tag(","),
                 delimited(
@@ -359,7 +349,7 @@ impl ExtAttrValue {
                     parser::multispace_or_comment0,
                 ),
             ),
-            preceded(parser::multispace_or_comment0, tag(")")),
+            tuple((parser::multispace_or_comment0, tag(")"))),
         )(input)
     }
 }
@@ -389,7 +379,7 @@ impl Argument {
         let (input, identifier) =
             preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
         let (input, default) = opt(preceded(
-            preceded(parser::multispace_or_comment0, tag("=")),
+            tuple((parser::multispace_or_comment0, tag("="))),
             DefaultValue::parse,
         ))(input)?;
 
@@ -408,12 +398,9 @@ impl Argument {
 
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<Argument>> {
         delimited(
-            preceded(parser::multispace_or_comment0, tag("(")),
-            separated_list0(
-                tag(","),
-                terminated(Self::parse, parser::multispace_or_comment0),
-            ),
-            preceded(parser::multispace_or_comment0, tag(")")),
+            tuple((parser::multispace_or_comment0, tag("("))),
+            separated_list0(tag(","), Self::parse),
+            tuple((parser::multispace_or_comment0, tag(")"))),
         )(input)
     }
 }

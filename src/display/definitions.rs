@@ -40,7 +40,7 @@ impl fmt::Display for Definition {
 impl fmt::Display for Interface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         if self.partial {
@@ -64,7 +64,7 @@ impl fmt::Display for Interface {
 impl fmt::Display for InterfaceMixin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         if self.partial {
@@ -82,7 +82,7 @@ impl fmt::Display for InterfaceMixin {
 impl fmt::Display for Includes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         write!(f, "{} includes {};", self.interface, self.mixin)
@@ -92,7 +92,7 @@ impl fmt::Display for Includes {
 impl fmt::Display for CallbackInterface {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         write!(f, "callback interface {} {{", self.identifier)?;
@@ -106,7 +106,7 @@ impl fmt::Display for CallbackInterface {
 impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         if self.partial {
@@ -124,7 +124,7 @@ impl fmt::Display for Namespace {
 impl fmt::Display for Dictionary {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         if self.partial {
@@ -148,7 +148,7 @@ impl fmt::Display for Dictionary {
 impl fmt::Display for Enumeration {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         write!(f, "enum {} {{", self.identifier)?;
@@ -162,7 +162,7 @@ impl fmt::Display for Enumeration {
 impl fmt::Display for CallbackFunction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         write!(
@@ -178,7 +178,7 @@ impl fmt::Display for CallbackFunction {
 impl fmt::Display for Typedef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
-            write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
+            writeln!(f, "[{}]", join(&self.ext_attrs, ", "))?;
         }
 
         write!(f, "typedef {} {};", self.r#type, self.identifier)
