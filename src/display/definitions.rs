@@ -10,8 +10,10 @@ use crate::{
 
 // TODO: Find a better solution to determine if an identifier has to be in quotes.
 fn display_ext_attr_identifier(identifier: &str) -> String {
-    if parser::parse_identifier(identifier).is_ok() {
-        return identifier.to_string();
+    if let Ok((rest, identifier)) = parser::parse_identifier(identifier) {
+        if rest.is_empty() {
+            return identifier;
+        }
     }
 
     format!("{:?}", identifier)
