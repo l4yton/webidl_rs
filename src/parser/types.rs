@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while_m_n},
-    combinator::{map, not, opt, peek},
+    combinator::{map, not, opt, peek, value},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
@@ -222,56 +222,53 @@ impl PrimitiveType {
     pub(crate) fn parse(input: &str) -> IResult<&str, PrimitiveType> {
         terminated(
             alt((
-                map(tag("unsigned short"), |_| PrimitiveType::UnsignedShort),
-                map(tag("unsigned long long"), |_| {
-                    PrimitiveType::UnsignedLongLong
-                }),
-                map(tag("unsigned long"), |_| PrimitiveType::UnsignedLong),
-                map(tag("long long"), |_| PrimitiveType::LongLong),
-                map(tag("unrestricted float"), |_| {
-                    PrimitiveType::UnrestrictedFloat
-                }),
-                map(tag("unrestricted double"), |_| {
-                    PrimitiveType::UnrestrictedDouble
-                }),
-                map(tag("any"), |_| PrimitiveType::Any),
-                map(tag("undefinded"), |_| PrimitiveType::Undefined),
+                value(PrimitiveType::UnsignedShort, tag("unsigned short")),
+                value(PrimitiveType::UnsignedLongLong, tag("unsigned long long")),
+                value(PrimitiveType::UnsignedLong, tag("unsigned long")),
+                value(PrimitiveType::LongLong, tag("long long")),
+                value(PrimitiveType::UnrestrictedFloat, tag("unrestricted float")),
+                value(
+                    PrimitiveType::UnrestrictedDouble,
+                    tag("unrestricted double"),
+                ),
+                value(PrimitiveType::Any, tag("any")),
+                value(PrimitiveType::Undefined, tag("undefined")),
                 // NOTE: Interpreting "void" as "undefined", see: https://github.com/whatwg/webidl/issues/60
-                map(tag("void"), |_| PrimitiveType::Undefined),
-                map(tag("boolean"), |_| PrimitiveType::Boolean),
-                map(tag("byte"), |_| PrimitiveType::Byte),
-                map(tag("octet"), |_| PrimitiveType::Octet),
-                map(tag("short"), |_| PrimitiveType::Short),
-                map(tag("long"), |_| PrimitiveType::Long),
-                map(tag("float"), |_| PrimitiveType::Float),
-                map(tag("double"), |_| PrimitiveType::Double),
-                map(tag("bigint"), |_| PrimitiveType::Bigint),
-                map(tag("DOMString"), |_| PrimitiveType::DOMString),
-                map(tag("ByteString"), |_| PrimitiveType::ByteString),
-                map(tag("USVString"), |_| PrimitiveType::USVString),
+                value(PrimitiveType::Undefined, tag("void")),
+                value(PrimitiveType::Boolean, tag("boolean")),
+                value(PrimitiveType::Byte, tag("byte")),
+                value(PrimitiveType::Octet, tag("octet")),
+                value(PrimitiveType::Short, tag("short")),
+                value(PrimitiveType::Long, tag("long")),
+                value(PrimitiveType::Float, tag("float")),
+                value(PrimitiveType::Double, tag("double")),
+                value(PrimitiveType::Bigint, tag("bigint")),
+                value(PrimitiveType::DOMString, tag("DOMString")),
+                value(PrimitiveType::ByteString, tag("ByteString")),
+                value(PrimitiveType::USVString, tag("USVString")),
                 // There is a limit of 21 parsers by alt().
                 alt((
-                    map(tag("object"), |_| PrimitiveType::Object),
-                    map(tag("symbol"), |_| PrimitiveType::Symbol),
-                    map(tag("ArrayBuffer"), |_| PrimitiveType::ArrayBuffer),
-                    map(tag("Int8Array"), |_| PrimitiveType::Int8Array),
-                    map(tag("Int16Array"), |_| PrimitiveType::Int16Array),
-                    map(tag("Int32Array"), |_| PrimitiveType::Int32Array),
-                    map(tag("Uint8Array"), |_| PrimitiveType::Uint8Array),
-                    map(tag("Uint16Array"), |_| PrimitiveType::Uint16Array),
-                    map(tag("Uint32Array"), |_| PrimitiveType::Uint32Array),
-                    map(tag("Uint8ClampedArray"), |_| {
-                        PrimitiveType::Uint8ClampedArray
-                    }),
-                    map(tag("BigInt64Array"), |_| PrimitiveType::BigInt64Array),
-                    map(tag("BigUint64Array"), |_| PrimitiveType::BigUint64Array),
-                    map(tag("Float32Array"), |_| PrimitiveType::Float32Array),
-                    map(tag("Float64Array"), |_| PrimitiveType::Float64Array),
+                    value(PrimitiveType::Object, tag("object")),
+                    value(PrimitiveType::Symbol, tag("symbol")),
+                    value(PrimitiveType::ArrayBuffer, tag("ArrayBuffer")),
+                    value(PrimitiveType::Int8Array, tag("Int8Array")),
+                    value(PrimitiveType::Int16Array, tag("Int16Array")),
+                    value(PrimitiveType::Int32Array, tag("Int32Array")),
+                    value(PrimitiveType::Uint8Array, tag("Uint8Array")),
+                    value(PrimitiveType::Uint16Array, tag("Uint16Array")),
+                    value(PrimitiveType::Uint32Array, tag("Uint32Array")),
+                    value(PrimitiveType::Uint8ClampedArray, tag("Uint8ClampedArray")),
+                    value(PrimitiveType::BigInt64Array, tag("BigInt64Array")),
+                    value(PrimitiveType::BigUint64Array, tag("BigUint64Array")),
+                    value(PrimitiveType::Float32Array, tag("Float32Array")),
+                    value(PrimitiveType::Float64Array, tag("Float64Array")),
                 )),
             )),
-            // A bit hacky, but there shouldn't be any other character that may be part of the
-            // identifier. Example:
-            // `long longMember` - "long" is the actual type and "longMember" the identifier.
+            // Make sure there isn't any character following that may be part of the identifier or
+            // type.
+            // Examples:
+            // * `long longMember` - "long" is the actual type and "longMember" the identifier.
+            // * `DOMStringList foo` - The type is "DOMStringList" and not "DOMString".
             peek(not(take_while_m_n(1, 1, |s: char| {
                 s.is_ascii_alphanumeric() || s == '_' || s == '-'
             }))),

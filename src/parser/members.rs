@@ -2,7 +2,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{digit1, hex_digit1},
-    combinator::{map, map_res, not, opt, peek},
+    combinator::{map, map_res, not, opt, peek, value},
     multi::many0,
     number::complete::float,
     sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
@@ -100,9 +100,9 @@ impl ConstValue {
                 ),
                 // NOTE: Change this? Don't think we need f64 for WebIDL though.
                 map(float, |f| ConstValue::Decimal(f as f64)),
-                map(tag("Infinity"), |_| ConstValue::Infinity),
-                map(tag("-Infinity"), |_| ConstValue::NegativeInfinity),
-                map(tag("NaN"), |_| ConstValue::NaN),
+                value(ConstValue::Infinity, tag("Infinity")),
+                value(ConstValue::NegativeInfinity, tag("-Infinity")),
+                value(ConstValue::NaN, tag("NaN")),
             )),
         )(input)
     }
@@ -134,9 +134,9 @@ impl AttrSpecial {
         opt(delimited(
             parser::multispace_or_comment0,
             alt((
-                map(tag("static"), |_| AttrSpecial::Static),
-                map(tag("stringifier"), |_| AttrSpecial::Stringifier),
-                map(tag("inherit"), |_| AttrSpecial::Inherit),
+                value(AttrSpecial::Static, tag("static")),
+                value(AttrSpecial::Stringifier, tag("stringifier")),
+                value(AttrSpecial::Inherit, tag("inherit")),
             )),
             parser::multispace_or_comment1,
         ))(input)
@@ -182,10 +182,10 @@ impl OpSpecial {
         opt(delimited(
             parser::multispace_or_comment0,
             alt((
-                map(tag("static"), |_| OpSpecial::Static),
-                map(tag("getter"), |_| OpSpecial::Getter),
-                map(tag("setter"), |_| OpSpecial::Setter),
-                map(tag("deleter"), |_| OpSpecial::Deleter),
+                value(OpSpecial::Static, tag("static")),
+                value(OpSpecial::Getter, tag("getter")),
+                value(OpSpecial::Setter, tag("setter")),
+                value(OpSpecial::Deleter, tag("deleter")),
             )),
             parser::multispace_or_comment1,
         ))(input)
