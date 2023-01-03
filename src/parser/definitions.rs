@@ -2,7 +2,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
     character::complete::{digit1, hex_digit1},
-    combinator::{map, map_res, not, opt, peek},
+    combinator::{map, map_res, not, opt, peek, value},
     multi::{many0, separated_list0},
     number::complete::float,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
@@ -333,7 +333,7 @@ impl ExtAttrValue {
                     ExtAttrValue::Identifier,
                 ),
                 map(Self::parse_identifier_list, ExtAttrValue::IdentifierList),
-                map(tag("*"), |_| ExtAttrValue::Wildcard),
+                value(ExtAttrValue::Wildcard, tag("*")),
             )),
         )(input)
     }
@@ -430,13 +430,13 @@ impl DefaultValue {
                     delimited(tag("\""), take_until("\""), tag("\"")),
                     |s: &str| DefaultValue::String(s.to_string()),
                 ),
-                map(tag("null"), |_| DefaultValue::Null),
-                map(tag("Infinity"), |_| DefaultValue::Infinity),
-                map(tag("-Infinity"), |_| DefaultValue::NegativeInfinity),
-                map(tag("NaN"), |_| DefaultValue::NaN),
-                map(tag("undefined"), |_| DefaultValue::Undefined),
-                map(tag("[]"), |_| DefaultValue::Sequence),
-                map(tag("{}"), |_| DefaultValue::Dictionary),
+                value(DefaultValue::Null, tag("null")),
+                value(DefaultValue::Infinity, tag("Infinity")),
+                value(DefaultValue::NegativeInfinity, tag("-Infinity")),
+                value(DefaultValue::NaN, tag("NaN")),
+                value(DefaultValue::Undefined, tag("undefined")),
+                value(DefaultValue::Sequence, tag("[]")),
+                value(DefaultValue::Dictionary, tag("{}")),
             )),
         )(input)
     }
