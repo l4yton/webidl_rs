@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_while_m_n},
-    combinator::{map, not, opt, peek, value},
+    bytes::complete::{tag, take},
+    combinator::{map, opt, peek, value, verify},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
@@ -269,9 +269,9 @@ impl PrimitiveType {
             // Examples:
             // * `long longMember` - "long" is the actual type and "longMember" the identifier.
             // * `DOMStringList foo` - The type is "DOMStringList" and not "DOMString".
-            peek(not(take_while_m_n(1, 1, |s: char| {
-                s.is_ascii_alphanumeric() || s == '_' || s == '-'
-            }))),
+            peek(verify(take(1usize), |s: &str| {
+                !(s.chars().all(|c| c.is_ascii_alphanumeric()) || s == "_" || s == "-")
+            })),
         )(input)
     }
 }
