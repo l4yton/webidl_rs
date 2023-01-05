@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{digit1, hex_digit1},
+    character::complete::{char, digit1, hex_digit1},
     combinator::{map, map_res, not, opt, peek, value},
     multi::many0,
     number::complete::float,
@@ -45,15 +45,15 @@ impl Member {
                 map(Maplike::parse, Member::Maplike),
                 map(Setlike::parse, Member::Setlike),
             )),
-            tuple((parser::multispace_or_comment0, tag(";"))),
+            tuple((parser::multispace_or_comment0, char(';'))),
         )(input)
     }
 
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<Member>> {
         delimited(
-            tuple((parser::multispace_or_comment0, tag("{"))),
+            tuple((parser::multispace_or_comment0, char('{'))),
             many0(Self::parse),
-            tuple((parser::multispace_or_comment0, tag("}"))),
+            tuple((parser::multispace_or_comment0, char('}'))),
         )(input)
     }
 }
@@ -63,7 +63,7 @@ impl Constant {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, (r#type, identifier)) = parse_type_and_identifier_for_member(input, "const")?;
         let (input, value) = preceded(
-            tuple((parser::multispace_or_comment0, tag("="))),
+            tuple((parser::multispace_or_comment0, char('='))),
             ConstValue::parse,
         )(input)?;
 
@@ -93,7 +93,7 @@ impl ConstValue {
                 }),
                 map(
                     // Make sure there is no "." at the end -> float.
-                    map_res(terminated(digit1, not(peek(tag(".")))), |s: &str| {
+                    map_res(terminated(digit1, not(peek(char('.')))), |s: &str| {
                         s.parse::<i64>()
                     }),
                     ConstValue::Integer,
@@ -228,16 +228,16 @@ impl Iterable {
                 parser::multispace_or_comment0,
                 tag("iterable"),
                 parser::multispace_or_comment0,
-                tag("<"),
+                char('<'),
             )),
             pair(
                 Type::parse,
                 opt(preceded(
-                    tuple((parser::multispace_or_comment0, tag(","))),
+                    tuple((parser::multispace_or_comment0, char(','))),
                     Type::parse,
                 )),
             ),
-            tuple((parser::multispace_or_comment0, tag(">"))),
+            tuple((parser::multispace_or_comment0, char('>'))),
         )(input)?;
         let (input, arguments) = opt(Argument::parse_multi0)(input)?;
 
@@ -278,14 +278,14 @@ impl Maplike {
                 parser::multispace_or_comment0,
                 tag("maplike"),
                 parser::multispace_or_comment0,
-                tag("<"),
+                char('<'),
             )),
             separated_pair(
                 Type::parse,
-                tuple((parser::multispace_or_comment0, tag(","))),
+                tuple((parser::multispace_or_comment0, char(','))),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, tag(">"))),
+            tuple((parser::multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((
@@ -309,10 +309,10 @@ impl Setlike {
                 parser::multispace_or_comment0,
                 tag("setlike"),
                 parser::multispace_or_comment0,
-                tag("<"),
+                char('<'),
             )),
             Type::parse,
-            tuple((parser::multispace_or_comment0, tag(">"))),
+            tuple((parser::multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((

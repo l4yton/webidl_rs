@@ -1,6 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
+    character::complete::char,
     combinator::{map, opt, peek, value, verify},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
@@ -18,10 +19,10 @@ fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, 
             parser::multispace_or_comment0,
             tag(name),
             parser::multispace_or_comment0,
-            tag("<"),
+            char('<'),
         )),
         Type::parse,
-        tuple((parser::multispace_or_comment0, tag(">"))),
+        tuple((parser::multispace_or_comment0, char('>'))),
     )(input)
 }
 
@@ -43,7 +44,7 @@ impl SequenceType {
     pub(crate) fn parse(input: &str) -> IResult<&str, SequenceType> {
         let (input, r#type) = parse_parameterized_type(input, "sequence")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -64,14 +65,14 @@ impl RecordType {
                 parser::multispace_or_comment0,
                 tag("record"),
                 parser::multispace_or_comment0,
-                tag("<"),
+                char('<'),
             )),
             separated_pair(
                 RecordTypeKey::parse,
-                tuple((parser::multispace_or_comment0, tag(","))),
+                tuple((parser::multispace_or_comment0, char(','))),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, tag(">"))),
+            tuple((parser::multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((
@@ -103,7 +104,7 @@ impl UnionType {
         let (input, types) = delimited(
             tuple((
                 parser::multispace_or_comment0,
-                tag("("),
+                char('('),
                 parser::multispace_or_comment0,
             )),
             separated_list1(
@@ -114,10 +115,10 @@ impl UnionType {
                 )),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, tag(")"))),
+            tuple((parser::multispace_or_comment0, char(')'))),
         )(input)?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -136,7 +137,7 @@ impl PromiseType {
     pub(crate) fn parse(input: &str) -> IResult<&str, PromiseType> {
         let (input, r#type) = parse_parameterized_type(input, "Promise")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -154,7 +155,7 @@ impl FrozenArrayType {
     pub(crate) fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -172,7 +173,7 @@ impl ObservableArrayType {
     pub(crate) fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
         let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -191,7 +192,7 @@ impl StandardType {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, name) = StandardTypeName::parse(input)?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, tag("?")))),
+            opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 

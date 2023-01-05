@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{digit1, hex_digit1},
+    character::complete::{char, digit1, hex_digit1},
     combinator::{map, map_res, not, opt, peek, value},
     multi::{many0, separated_list0},
     number::complete::float,
@@ -19,7 +19,7 @@ fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<String>> {
     opt(preceded(
         tuple((
             parser::multispace_or_comment0,
-            tag(":"),
+            char(':'),
             parser::multispace_or_comment0,
         )),
         parser::parse_identifier,
@@ -51,7 +51,7 @@ impl Definition {
                 map(CallbackFunction::parse, Definition::CallbackFunction),
                 map(Typedef::parse, Definition::Typedef),
             )),
-            tuple((parser::multispace_or_comment0, tag(";"))),
+            tuple((parser::multispace_or_comment0, char(';'))),
         )(input)
     }
 }
@@ -185,9 +185,9 @@ impl Enumeration {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, identifier) = parse_identifier_for_definition(input, "enum")?;
         let (input, values) = delimited(
-            tuple((parser::multispace_or_comment0, tag("{"))),
+            tuple((parser::multispace_or_comment0, char('{'))),
             separated_list0(
-                tag(","),
+                char(','),
                 delimited(
                     parser::multispace_or_comment0,
                     parser::parse_quoted_string,
@@ -197,8 +197,8 @@ impl Enumeration {
             tuple((
                 parser::multispace_or_comment0,
                 // This is just in case the last value has a comma at the end.
-                opt(tuple((tag(","), parser::multispace_or_comment0))),
-                tag("}"),
+                opt(tuple((char(','), parser::multispace_or_comment0))),
+                char('}'),
             )),
         )(input)?;
 
@@ -218,7 +218,7 @@ impl CallbackFunction {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, identifier) = parse_identifier_for_definition(input, "callback")?;
         let (input, r#type) = preceded(
-            tuple((parser::multispace_or_comment1, tag("="))),
+            tuple((parser::multispace_or_comment1, char('='))),
             Type::parse,
         )(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
@@ -267,11 +267,11 @@ impl DictionaryMember {
         let (input, r#type) = terminated(Type::parse, parser::multispace_or_comment1)(input)?;
         let (input, identifier) = parser::parse_identifier(input)?;
         let (input, default) = opt(preceded(
-            tuple((parser::multispace_or_comment0, tag("="))),
+            tuple((parser::multispace_or_comment0, char('='))),
             DefaultValue::parse,
         ))(input)?;
 
-        let (input, _) = tuple((parser::multispace_or_comment0, tag(";")))(input)?;
+        let (input, _) = tuple((parser::multispace_or_comment0, char(';')))(input)?;
         Ok((
             input,
             DictionaryMember {
@@ -286,9 +286,9 @@ impl DictionaryMember {
 
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<DictionaryMember>> {
         delimited(
-            preceded(parser::multispace_or_comment0, tag("{")),
+            preceded(parser::multispace_or_comment0, char('{')),
             many0(Self::parse),
-            preceded(parser::multispace_or_comment0, tag("}")),
+            preceded(parser::multispace_or_comment0, char('}')),
         )(input)
     }
 }
@@ -299,7 +299,7 @@ impl ExtendedAttribute {
             preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
         let (input, value) = opt(alt((
             preceded(
-                tuple((parser::multispace_or_comment0, tag("="))),
+                tuple((parser::multispace_or_comment0, char('='))),
                 ExtAttrValue::parse,
             ),
             // This is deprecated, but was used by: `Constructor(double x, double y)`.
@@ -313,9 +313,9 @@ impl ExtendedAttribute {
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<ExtendedAttribute>> {
         map(
             opt(delimited(
-                tuple((parser::multispace_or_comment0, tag("["))),
-                separated_list0(tag(","), Self::parse),
-                tuple((parser::multispace_or_comment0, tag("]"))),
+                tuple((parser::multispace_or_comment0, char('['))),
+                separated_list0(char(','), Self::parse),
+                tuple((parser::multispace_or_comment0, char(']'))),
             )),
             |o| o.unwrap_or_default(),
         )(input)
@@ -333,23 +333,23 @@ impl ExtAttrValue {
                     ExtAttrValue::Identifier,
                 ),
                 map(Self::parse_identifier_list, ExtAttrValue::IdentifierList),
-                value(ExtAttrValue::Wildcard, tag("*")),
+                value(ExtAttrValue::Wildcard, char('*')),
             )),
         )(input)
     }
 
     fn parse_identifier_list(input: &str) -> IResult<&str, Vec<String>> {
         delimited(
-            tuple((parser::multispace_or_comment0, tag("("))),
+            tuple((parser::multispace_or_comment0, char('('))),
             separated_list0(
-                tag(","),
+                char(','),
                 delimited(
                     parser::multispace_or_comment0,
                     alt((parser::parse_identifier, parser::parse_quoted_string)),
                     parser::multispace_or_comment0,
                 ),
             ),
-            tuple((parser::multispace_or_comment0, tag(")"))),
+            tuple((parser::multispace_or_comment0, char(')'))),
         )(input)
     }
 }
@@ -379,7 +379,7 @@ impl Argument {
         let (input, identifier) =
             preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
         let (input, default) = opt(preceded(
-            tuple((parser::multispace_or_comment0, tag("="))),
+            tuple((parser::multispace_or_comment0, char('='))),
             DefaultValue::parse,
         ))(input)?;
 
@@ -398,9 +398,9 @@ impl Argument {
 
     pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<Argument>> {
         delimited(
-            tuple((parser::multispace_or_comment0, tag("("))),
-            separated_list0(tag(","), Self::parse),
-            tuple((parser::multispace_or_comment0, tag(")"))),
+            tuple((parser::multispace_or_comment0, char('('))),
+            separated_list0(char(','), Self::parse),
+            tuple((parser::multispace_or_comment0, char(')'))),
         )(input)
     }
 }
@@ -419,7 +419,7 @@ impl DefaultValue {
                 }),
                 map(
                     // Make sure there is no "." at the end -> float
-                    map_res(terminated(digit1, not(peek(tag(".")))), |s: &str| {
+                    map_res(terminated(digit1, not(peek(char('.')))), |s: &str| {
                         s.parse::<i64>()
                     }),
                     DefaultValue::Integer,
@@ -427,7 +427,7 @@ impl DefaultValue {
                 // NOTE: Change this? Don't think we need f64 for WebIDL though.
                 map(float, |f| DefaultValue::Decimal(f as f64)),
                 map(
-                    delimited(tag("\""), take_until("\""), tag("\"")),
+                    delimited(char('"'), take_until("\""), char('"')),
                     |s: &str| DefaultValue::String(s.to_string()),
                 ),
                 value(DefaultValue::Null, tag("null")),
