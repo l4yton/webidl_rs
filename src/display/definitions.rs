@@ -231,13 +231,7 @@ impl fmt::Display for ExtAttrValue {
                     "=({})",
                     identifier_list
                         .iter()
-                        .map(
-                            |identifier| if identifier.chars().all(|s| s.is_ascii_alphanumeric()) {
-                                identifier.to_string()
-                            } else {
-                                format!("{:?}", identifier)
-                            }
-                        )
+                        .map(|identifier| display_ext_attr_identifier(identifier))
                         .join(", ")
                 )
             }
