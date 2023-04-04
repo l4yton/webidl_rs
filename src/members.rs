@@ -1,3 +1,5 @@
+use swc_atoms::JsWord;
+
 use crate::{Argument, ExtendedAttribute, Type};
 
 #[derive(Debug, Clone)]
@@ -16,7 +18,7 @@ pub enum Member {
 pub struct Constant {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub value: ConstValue,
 }
 
@@ -37,7 +39,7 @@ pub struct Attribute {
     pub readonly: bool,
     pub special: Option<AttrSpecial>,
     pub r#type: Type,
-    pub identifier: String,
+    pub identifier: JsWord,
 }
 
 #[derive(Debug, Clone)]
@@ -52,7 +54,7 @@ pub struct Operation {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub special: Option<OpSpecial>,
     pub r#type: Type,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub arguments: Vec<Argument>,
 }
 

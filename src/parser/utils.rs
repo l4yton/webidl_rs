@@ -7,9 +7,10 @@ use nom::{
     sequence::{delimited, tuple},
     IResult,
 };
+use swc_atoms::JsWord;
 
 // As definined in: https://webidl.spec.whatwg.org/#idl-grammar
-pub(crate) fn parse_identifier(input: &str) -> IResult<&str, String> {
+pub(crate) fn parse_identifier(input: &str) -> IResult<&str, JsWord> {
     map(
         recognize(tuple((
             // [_-]?
@@ -19,7 +20,7 @@ pub(crate) fn parse_identifier(input: &str) -> IResult<&str, String> {
             // [0-9A-Z_a-z-]*
             take_while(|s: char| s.is_ascii_alphanumeric() || s == '_' || s == '-'),
         ))),
-        |s| s.to_string(),
+        |s| JsWord::from(s),
     )(input)
 }
 
@@ -39,10 +40,10 @@ pub(crate) fn multispace_or_comment1(input: &str) -> IResult<&str, Vec<&str>> {
     )))(input)
 }
 
-pub(crate) fn parse_quoted_string(input: &str) -> IResult<&str, String> {
+pub(crate) fn parse_quoted_string(input: &str) -> IResult<&str, JsWord> {
     map(
         delimited(tag("\""), take_until("\""), tag("\"")),
-        |s: &str| s.to_string(),
+        |s: &str| JsWord::from(s),
     )(input)
 }
 

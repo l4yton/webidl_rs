@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 nom = "7.1.2"
 itertools = "0.10.5"
+swc_atoms = "0.4.43"

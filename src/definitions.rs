@@ -1,3 +1,5 @@
+use swc_atoms::JsWord;
+
 use crate::{Member, Type};
 
 #[derive(Debug, Clone)]
@@ -17,8 +19,8 @@ pub enum Definition {
 pub struct Interface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: String,
-    pub inheritance: Option<String>,
+    pub identifier: JsWord,
+    pub inheritance: Option<JsWord>,
     pub members: Vec<Member>,
 }
 
@@ -26,21 +28,21 @@ pub struct Interface {
 pub struct InterfaceMixin {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub members: Vec<Member>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Includes {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub interface: String,
-    pub mixin: String,
+    pub interface: JsWord,
+    pub mixin: JsWord,
 }
 
 #[derive(Debug, Clone)]
 pub struct CallbackInterface {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub members: Vec<Member>,
 }
 
@@ -48,7 +50,7 @@ pub struct CallbackInterface {
 pub struct Namespace {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub members: Vec<Member>,
 }
 
@@ -56,22 +58,22 @@ pub struct Namespace {
 pub struct Dictionary {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: String,
-    pub inheritance: Option<String>,
+    pub identifier: JsWord,
+    pub inheritance: Option<JsWord>,
     pub members: Vec<DictionaryMember>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Enumeration {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: String,
-    pub values: Vec<String>,
+    pub identifier: JsWord,
+    pub values: Vec<JsWord>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CallbackFunction {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub r#type: Type,
     pub arguments: Vec<Argument>,
 }
@@ -80,7 +82,7 @@ pub struct CallbackFunction {
 pub struct Typedef {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
-    pub identifier: String,
+    pub identifier: JsWord,
 }
 
 #[derive(Debug, Clone)]
@@ -88,13 +90,13 @@ pub struct DictionaryMember {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub required: bool,
     pub r#type: Type,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub default: Option<DefaultValue>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ExtendedAttribute {
-    pub identifier: String,
+    pub identifier: JsWord,
     pub value: Option<ExtAttrValue>,
 }
 
@@ -102,15 +104,15 @@ pub struct ExtendedAttribute {
 pub enum ExtAttrValue {
     ArgumentList(Vec<Argument>),
     NamedArgumentList(NamedArgumentList),
-    Identifier(String),
-    IdentifierList(Vec<String>),
+    Identifier(JsWord),
+    IdentifierList(Vec<JsWord>),
 
     Wildcard,
 }
 
 #[derive(Debug, Clone)]
 pub struct NamedArgumentList {
-    pub identifier: String,
+    pub identifier: JsWord,
     pub arguments: Vec<Argument>,
 }
 
@@ -120,7 +122,7 @@ pub struct Argument {
     pub optional: bool,
     pub r#type: Type,
     pub variadic: bool,
-    pub identifier: String,
+    pub identifier: JsWord,
     pub default: Option<DefaultValue>,
 }
 
@@ -129,7 +131,7 @@ pub enum DefaultValue {
     Boolean(bool),
     Integer(i64),
     Decimal(f64),
-    String(String),
+    String(JsWord),
 
     Null,
     Infinity,

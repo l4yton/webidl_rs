@@ -8,6 +8,7 @@ use nom::{
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+use swc_atoms::JsWord;
 
 use crate::{
     parser, Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
@@ -15,7 +16,7 @@ use crate::{
     InterfaceMixin, Member, NamedArgumentList, Namespace, Type, Typedef,
 };
 
-fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<String>> {
+fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<JsWord>> {
     opt(preceded(
         tuple((
             parser::multispace_or_comment0,
@@ -26,7 +27,7 @@ fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<String>> {
     ))(input)
 }
 
-fn parse_identifier_for_definition<'a>(input: &'a str, name: &str) -> IResult<&'a str, String> {
+fn parse_identifier_for_definition<'a>(input: &'a str, name: &str) -> IResult<&'a str, JsWord> {
     preceded(
         tuple((
             parser::multispace_or_comment0,
@@ -338,7 +339,7 @@ impl ExtAttrValue {
         )(input)
     }
 
-    fn parse_identifier_list(input: &str) -> IResult<&str, Vec<String>> {
+    fn parse_identifier_list(input: &str) -> IResult<&str, Vec<JsWord>> {
         delimited(
             tuple((parser::multispace_or_comment0, char('('))),
             separated_list0(
@@ -428,7 +429,7 @@ impl DefaultValue {
                 map(float, |f| DefaultValue::Decimal(f as f64)),
                 map(
                     delimited(char('"'), take_until("\""), char('"')),
-                    |s: &str| DefaultValue::String(s.to_string()),
+                    |s: &str| DefaultValue::String(JsWord::from(s)),
                 ),
                 value(DefaultValue::Null, tag("null")),
                 value(DefaultValue::Infinity, tag("Infinity")),

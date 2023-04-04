@@ -8,7 +8,7 @@ fn test_interface_simple() {
     let interface = Interface {
         ext_attrs: vec![],
         partial: false,
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         inheritance: None,
         members: vec![],
     };
@@ -22,7 +22,7 @@ fn test_interface_mixin_simple() {
     let mixin = InterfaceMixin {
         ext_attrs: vec![],
         partial: false,
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         members: vec![],
     };
     let expected = tests::load_test_file("interface_mixin_simple.idl");
@@ -34,8 +34,8 @@ fn test_interface_mixin_simple() {
 fn test_includes_simple() {
     let includes = Includes {
         ext_attrs: vec![],
-        interface: "Foo".to_string(),
-        mixin: "Bar".to_string(),
+        interface: "Foo".into(),
+        mixin: "Bar".into(),
     };
     let expected = tests::load_test_file("includes_simple.idl");
 
@@ -46,7 +46,7 @@ fn test_includes_simple() {
 fn test_callback_interface_simple() {
     let cb_interface = CallbackInterface {
         ext_attrs: vec![],
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         members: vec![],
     };
     let expected = tests::load_test_file("callback_interface_simple.idl");
@@ -59,7 +59,7 @@ fn test_namespace_simple() {
     let namespace = Namespace {
         ext_attrs: vec![],
         partial: false,
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         members: vec![],
     };
     let expected = tests::load_test_file("namespace_simple.idl");
@@ -72,7 +72,7 @@ fn test_dictionary_simple() {
     let dictionary = Dictionary {
         ext_attrs: vec![],
         partial: false,
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         inheritance: None,
         members: vec![],
     };
@@ -85,7 +85,7 @@ fn test_dictionary_simple() {
 fn test_enumeration_simple() {
     let r#enum = Enumeration {
         ext_attrs: vec![],
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         values: vec![],
     };
     let expected = tests::load_test_file("enumeration_simple.idl");
@@ -97,7 +97,7 @@ fn test_enumeration_simple() {
 fn test_callback_function_simple() {
     let cb_function = CallbackFunction {
         ext_attrs: vec![],
-        identifier: "Foo".to_string(),
+        identifier: "Foo".into(),
         r#type: Type::from("Bar"),
         arguments: vec![],
     };
@@ -111,7 +111,7 @@ fn test_typedef_simple() {
     let typedef = Typedef {
         ext_attrs: vec![],
         r#type: Type::from("Foo"),
-        identifier: "Bar".to_string(),
+        identifier: "Bar".into(),
     };
     let expected = tests::load_test_file("typedef_simple.idl");
 

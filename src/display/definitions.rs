@@ -12,7 +12,7 @@ use crate::{
 fn display_ext_attr_identifier(identifier: &str) -> String {
     if let Ok((rest, identifier)) = parser::parse_identifier(identifier) {
         if rest.is_empty() {
-            return identifier;
+            return identifier.to_string();
         }
     }
 

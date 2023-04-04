@@ -3,6 +3,8 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+use swc_atoms::JsWord;
+
 use crate::ExtendedAttribute;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -72,7 +74,7 @@ pub struct StandardType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StandardTypeName {
     Primitive(PrimitiveType),
-    Identifier(String),
+    Identifier(JsWord),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -123,7 +125,7 @@ impl From<String> for Type {
     fn from(identifier: String) -> Self {
         Self::Standard(StandardType {
             ext_attrs: vec![],
-            name: StandardTypeName::Identifier(identifier),
+            name: StandardTypeName::Identifier(JsWord::from(identifier)),
             nullable: false,
         })
     }

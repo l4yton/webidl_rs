@@ -8,6 +8,7 @@ use nom::{
     sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
     IResult,
 };
+use swc_atoms::JsWord;
 
 use crate::{
     parser, Argument, AttrSpecial, Attribute, ConstValue, Constant, Constructor, ExtendedAttribute,
@@ -17,7 +18,7 @@ use crate::{
 fn parse_type_and_identifier_for_member<'a>(
     input: &'a str,
     name: &str,
-) -> IResult<&'a str, (Type, String)> {
+) -> IResult<&'a str, (Type, JsWord)> {
     preceded(
         tuple((
             parser::multispace_or_comment0,
