@@ -145,7 +145,7 @@ pub enum DefaultValue {
 /* Functionality implementations */
 
 impl Definition {
-    pub fn get_identifier(&self) -> Option<&str> {
+    pub fn get_identifier(&self) -> Option<&JsWord> {
         match self {
             Definition::Interface(interface) => Some(&interface.identifier),
             Definition::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),

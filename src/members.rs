@@ -104,7 +104,7 @@ pub struct Setlike {
 /* Functionality implementations */
 
 impl Member {
-    pub fn get_identifier(&self) -> Option<&str> {
+    pub fn get_identifier(&self) -> Option<&JsWord> {
         match self {
             Member::Constant(constant) => Some(&constant.identifier),
             Member::Attribute(attribute) => Some(&attribute.identifier),
