@@ -121,19 +121,31 @@ pub enum PrimitiveType {
 
 /* Trait implementations */
 
-impl From<String> for Type {
-    fn from(identifier: String) -> Self {
+impl From<JsWord> for Type {
+    fn from(identifier: JsWord) -> Self {
         Self::Standard(StandardType {
             ext_attrs: vec![],
-            name: StandardTypeName::Identifier(JsWord::from(identifier)),
+            name: StandardTypeName::Identifier(identifier),
             nullable: false,
         })
     }
 }
 
+impl From<&JsWord> for Type {
+    fn from(identifier: &JsWord) -> Self {
+        JsWord::from(identifier).into()
+    }
+}
+
+impl From<String> for Type {
+    fn from(identifier: String) -> Self {
+        JsWord::from(identifier).into()
+    }
+}
+
 impl From<&str> for Type {
     fn from(identifier: &str) -> Self {
-        identifier.to_string().into()
+        JsWord::from(identifier).into()
     }
 }
 
