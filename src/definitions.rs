@@ -1,3 +1,5 @@
+use std::hash::{Hash, Hasher};
+
 use swc_atoms::JsWord;
 
 use crate::{Member, Type};
@@ -200,5 +202,9 @@ impl Definition {
 
 /* Trait implementations */
 
-// ...
-// ...
+impl Hash for Argument {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.r#type.hash(state);
+        self.variadic.hash(state);
+    }
+}
