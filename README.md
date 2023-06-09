@@ -11,7 +11,7 @@ webidl_rs = { git = "https://github.com/l4yton/webidl_rs" }
 
 ### `src/main.rs`
 ```rust
-use webidl_rs::{Constructor, Definition, Member};
+use webidl_rs::{Constructor, Definition, Member, Type};
 
 fn main() {
     let mut definitions =
@@ -22,6 +22,7 @@ fn main() {
         interface.members.push(Member::Constructor(Constructor {
             ext_attrs: vec![],
             arguments: vec![],
+            r#type: Type::from()
         }))
     }
 
