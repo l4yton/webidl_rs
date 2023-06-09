@@ -70,6 +70,7 @@ pub enum OpSpecial {
 pub struct Constructor {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub arguments: Vec<Argument>,
+    pub r#type: Type,
 }
 
 #[derive(Debug, Clone)]

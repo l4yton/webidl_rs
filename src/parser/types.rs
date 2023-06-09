@@ -1,8 +1,10 @@
+use crate::input::WebIDLInput;
+
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take},
-    character::complete::char,
-    combinator::{map, opt, peek, value, verify},
+    bytes::complete::tag,
+    character::complete::{char, satisfy},
+    combinator::{map, opt, peek, value},
     multi::separated_list1,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
@@ -13,21 +15,8 @@ use crate::{
     RecordType, RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
 };
 
-fn parse_parameterized_type<'a>(input: &'a str, name: &str) -> IResult<&'a str, Type> {
-    delimited(
-        tuple((
-            parser::multispace_or_comment0,
-            tag(name),
-            parser::multispace_or_comment0,
-            char('<'),
-        )),
-        Type::parse,
-        tuple((parser::multispace_or_comment0, char('>'))),
-    )(input)
-}
-
 impl Type {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Type> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Type> {
         alt((
             map(SequenceType::parse, Type::Sequence),
             map(RecordType::parse, Type::Record),
@@ -41,8 +30,8 @@ impl Type {
 }
 
 impl SequenceType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, SequenceType> {
-        let (input, r#type) = parse_parameterized_type(input, "sequence")?;
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, SequenceType> {
+        let (input, r#type) = parser::type_parameterized(input, "sequence")?;
         let (input, nullable) = map(
             opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
@@ -59,7 +48,7 @@ impl SequenceType {
 }
 
 impl RecordType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, RecordType> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, RecordType> {
         let (input, (key, value)) = delimited(
             tuple((
                 parser::multispace_or_comment0,
@@ -86,7 +75,7 @@ impl RecordType {
 }
 
 impl RecordTypeKey {
-    pub(crate) fn parse(input: &str) -> IResult<&str, RecordTypeKey> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, RecordTypeKey> {
         preceded(
             parser::multispace_or_comment0,
             alt((
@@ -99,7 +88,7 @@ impl RecordTypeKey {
 }
 
 impl UnionType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, UnionType> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, UnionType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, types) = delimited(
             tuple((
@@ -134,8 +123,8 @@ impl UnionType {
 }
 
 impl PromiseType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, PromiseType> {
-        let (input, r#type) = parse_parameterized_type(input, "Promise")?;
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, PromiseType> {
+        let (input, r#type) = parser::type_parameterized(input, "Promise")?;
         let (input, nullable) = map(
             opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
@@ -152,8 +141,8 @@ impl PromiseType {
 }
 
 impl FrozenArrayType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, FrozenArrayType> {
-        let (input, r#type) = parse_parameterized_type(input, "FrozenArray")?;
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, FrozenArrayType> {
+        let (input, r#type) = parser::type_parameterized(input, "FrozenArray")?;
         let (input, nullable) = map(
             opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
@@ -170,8 +159,10 @@ impl FrozenArrayType {
 }
 
 impl ObservableArrayType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, ObservableArrayType> {
-        let (input, r#type) = parse_parameterized_type(input, "ObservableArray")?;
+    pub(crate) fn parse(
+        input: WebIDLInput<&str>,
+    ) -> IResult<WebIDLInput<&str>, ObservableArrayType> {
+        let (input, r#type) = parser::type_parameterized(input, "ObservableArray")?;
         let (input, nullable) = map(
             opt(tuple((parser::multispace_or_comment0, char('?')))),
             |o| o.is_some(),
@@ -188,7 +179,7 @@ impl ObservableArrayType {
 }
 
 impl StandardType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, StandardType> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, StandardType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, name) = StandardTypeName::parse(input)?;
         let (input, nullable) = map(
@@ -208,19 +199,19 @@ impl StandardType {
 }
 
 impl StandardTypeName {
-    pub(crate) fn parse(input: &str) -> IResult<&str, StandardTypeName> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, StandardTypeName> {
         preceded(
             parser::multispace_or_comment0,
             alt((
                 map(PrimitiveType::parse, StandardTypeName::Primitive),
-                map(parser::parse_identifier, StandardTypeName::Identifier),
+                map(parser::idl_identifier, StandardTypeName::Identifier),
             )),
         )(input)
     }
 }
 
 impl PrimitiveType {
-    pub(crate) fn parse(input: &str) -> IResult<&str, PrimitiveType> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, PrimitiveType> {
         terminated(
             alt((
                 value(PrimitiveType::UnsignedShort, tag("unsigned short")),
@@ -270,8 +261,8 @@ impl PrimitiveType {
             // Examples:
             // * `long longMember` - "long" is the actual type and "longMember" the identifier.
             // * `DOMStringList foo` - The type is "DOMStringList" and not "DOMString".
-            peek(verify(take(1usize), |s: &str| {
-                !(s.chars().all(|c| c.is_ascii_alphanumeric()) || s == "_" || s == "-")
+            peek(satisfy(|c| {
+                !(c.is_ascii_alphanumeric() || c == '_' || c == '-')
             })),
         )(input)
     }

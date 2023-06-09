@@ -124,7 +124,7 @@ pub enum PrimitiveType {
 impl From<JsWord> for Type {
     fn from(identifier: JsWord) -> Self {
         Self::Standard(StandardType {
-            ext_attrs: vec![],
+            ext_attrs: Vec::with_capacity(0),
             name: StandardTypeName::Identifier(identifier),
             nullable: false,
         })
@@ -216,7 +216,7 @@ impl Eq for UnionType {}
 // NOTE: Can we optimize this?
 impl Hash for UnionType {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let mut hash_values = vec![];
+        let mut hash_values = Vec::with_capacity(self.types.len());
         for r#type in &self.types {
             let mut hasher = DefaultHasher::new();
             r#type.hash(&mut hasher);

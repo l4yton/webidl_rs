@@ -1,34 +1,29 @@
-/* Web IDL data structures */
 mod definitions;
+mod display;
+mod input;
 mod members;
+mod parser;
 mod types;
 
-pub use definitions::*;
-pub use members::*;
-pub use types::*;
-
-/* Display and parser logic */
-mod display;
-mod parser;
-
-/* Tests */
 #[cfg(test)]
 mod tests;
 
-/* Exposed functions */
-use itertools::join;
-use nom::{combinator::all_consuming, error::Error, multi::many0, sequence::terminated, Err};
+pub use definitions::*;
+pub use input::WebIDLInput;
+pub use members::*;
+pub use types::*;
 
-pub fn parse(input: &str) -> Result<Vec<Definition>, Err<Error<String>>> {
-    let (_, definitions) = all_consuming(terminated(
-        many0(Definition::parse),
+pub fn parse(
+    input: &str,
+) -> Result<Vec<Definition>, nom::Err<nom::error::Error<WebIDLInput<&str>>>> {
+    let (_, definitions) = nom::combinator::all_consuming(nom::sequence::terminated(
+        nom::multi::many0(Definition::parse),
         parser::multispace_or_comment0,
-    ))(input)
-    .map_err(|e| e.to_owned())?;
+    ))(WebIDLInput::from(input))?;
 
     Ok(definitions)
 }
 
 pub fn to_string(definitions: &[Definition]) -> String {
-    join(definitions, "\n\n")
+    itertools::join(definitions, "\n\n")
 }

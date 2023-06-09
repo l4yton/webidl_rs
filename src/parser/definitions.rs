@@ -1,6 +1,8 @@
+use crate::input::WebIDLInput;
+
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until},
+    bytes::complete::tag,
     character::complete::{char, digit1, hex_digit1},
     combinator::{map, map_res, not, opt, peek, value},
     multi::{many0, separated_list0},
@@ -16,30 +18,8 @@ use crate::{
     InterfaceMixin, Member, NamedArgumentList, Namespace, Type, Typedef,
 };
 
-fn parse_optional_inheritance(input: &str) -> IResult<&str, Option<JsWord>> {
-    opt(preceded(
-        tuple((
-            parser::multispace_or_comment0,
-            char(':'),
-            parser::multispace_or_comment0,
-        )),
-        parser::parse_identifier,
-    ))(input)
-}
-
-fn parse_identifier_for_definition<'a>(input: &'a str, name: &str) -> IResult<&'a str, JsWord> {
-    preceded(
-        tuple((
-            parser::multispace_or_comment0,
-            tag(name),
-            parser::multispace_or_comment1,
-        )),
-        parser::parse_identifier,
-    )(input)
-}
-
 impl Definition {
-    pub fn parse(input: &str) -> IResult<&str, Definition> {
+    pub fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Definition> {
         terminated(
             alt((
                 map(Interface::parse, Definition::Interface),
@@ -58,11 +38,11 @@ impl Definition {
 }
 
 impl Interface {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Interface> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Interface> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
-        let (input, identifier) = parse_identifier_for_definition(input, "interface")?;
-        let (input, inheritance) = parse_optional_inheritance(input)?;
+        let (input, partial) = parser::is_partial(input)?;
+        let (input, identifier) = parser::defintion_identifier(input, "interface")?;
+        let (input, inheritance) = parser::definition_inheritance(input)?;
         let (input, members) = Member::parse_multi0(input)?;
 
         Ok((
@@ -79,10 +59,10 @@ impl Interface {
 }
 
 impl InterfaceMixin {
-    pub(crate) fn parse(input: &str) -> IResult<&str, InterfaceMixin> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, InterfaceMixin> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
-        let (input, identifier) = parse_identifier_for_definition(input, "interface mixin")?;
+        let (input, partial) = parser::is_partial(input)?;
+        let (input, identifier) = parser::defintion_identifier(input, "interface mixin")?;
         let (input, members) = Member::parse_multi0(input)?;
 
         Ok((
@@ -98,18 +78,18 @@ impl InterfaceMixin {
 }
 
 impl Includes {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Includes> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Includes> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, (interface, mixin)) = preceded(
             parser::multispace_or_comment0,
             separated_pair(
-                parser::parse_identifier,
+                parser::idl_identifier,
                 tuple((
                     parser::multispace_or_comment1,
                     tag("includes"),
                     parser::multispace_or_comment1,
                 )),
-                parser::parse_identifier,
+                parser::idl_identifier,
             ),
         )(input)?;
 
@@ -125,9 +105,9 @@ impl Includes {
 }
 
 impl CallbackInterface {
-    pub(crate) fn parse(input: &str) -> IResult<&str, CallbackInterface> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, CallbackInterface> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, identifier) = parse_identifier_for_definition(input, "callback interface")?;
+        let (input, identifier) = parser::defintion_identifier(input, "callback interface")?;
         let (input, members) = Member::parse_multi0(input)?;
 
         Ok((
@@ -142,10 +122,10 @@ impl CallbackInterface {
 }
 
 impl Namespace {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Namespace> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Namespace> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
-        let (input, identifier) = parse_identifier_for_definition(input, "namespace")?;
+        let (input, partial) = parser::is_partial(input)?;
+        let (input, identifier) = parser::defintion_identifier(input, "namespace")?;
         let (input, members) = Member::parse_multi0(input)?;
 
         Ok((
@@ -161,11 +141,11 @@ impl Namespace {
 }
 
 impl Dictionary {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Dictionary> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Dictionary> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, partial) = parser::parse_is_some_attribute(input, "partial")?;
-        let (input, identifier) = parse_identifier_for_definition(input, "dictionary")?;
-        let (input, inheritance) = parse_optional_inheritance(input)?;
+        let (input, partial) = parser::is_partial(input)?;
+        let (input, identifier) = parser::defintion_identifier(input, "dictionary")?;
+        let (input, inheritance) = parser::definition_inheritance(input)?;
         let (input, members) = DictionaryMember::parse_multi0(input)?;
 
         Ok((
@@ -182,16 +162,16 @@ impl Dictionary {
 }
 
 impl Enumeration {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Enumeration> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Enumeration> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, identifier) = parse_identifier_for_definition(input, "enum")?;
+        let (input, identifier) = parser::defintion_identifier(input, "enum")?;
         let (input, values) = delimited(
             tuple((parser::multispace_or_comment0, char('{'))),
             separated_list0(
                 char(','),
                 delimited(
                     parser::multispace_or_comment0,
-                    parser::parse_quoted_string,
+                    parser::double_quoted_string,
                     parser::multispace_or_comment0,
                 ),
             ),
@@ -215,9 +195,9 @@ impl Enumeration {
 }
 
 impl CallbackFunction {
-    pub(crate) fn parse(input: &str) -> IResult<&str, CallbackFunction> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, CallbackFunction> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, identifier) = parse_identifier_for_definition(input, "callback")?;
+        let (input, identifier) = parser::defintion_identifier(input, "callback")?;
         let (input, r#type) = preceded(
             tuple((parser::multispace_or_comment1, char('='))),
             Type::parse,
@@ -237,7 +217,7 @@ impl CallbackFunction {
 }
 
 impl Typedef {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Typedef> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Typedef> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, r#type) = preceded(
             tuple((
@@ -248,7 +228,7 @@ impl Typedef {
             Type::parse,
         )(input)?;
         let (input, identifier) =
-            preceded(parser::multispace_or_comment1, parser::parse_identifier)(input)?;
+            preceded(parser::multispace_or_comment1, parser::idl_identifier)(input)?;
 
         Ok((
             input,
@@ -262,11 +242,11 @@ impl Typedef {
 }
 
 impl DictionaryMember {
-    pub(crate) fn parse(input: &str) -> IResult<&str, DictionaryMember> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, DictionaryMember> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, required) = parser::parse_is_some_attribute(input, "required")?;
+        let (input, required) = parser::is_required(input)?;
         let (input, r#type) = terminated(Type::parse, parser::multispace_or_comment1)(input)?;
-        let (input, identifier) = parser::parse_identifier(input)?;
+        let (input, identifier) = parser::idl_identifier(input)?;
         let (input, default) = opt(preceded(
             tuple((parser::multispace_or_comment0, char('='))),
             DefaultValue::parse,
@@ -285,7 +265,9 @@ impl DictionaryMember {
         ))
     }
 
-    pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<DictionaryMember>> {
+    pub(crate) fn parse_multi0(
+        input: WebIDLInput<&str>,
+    ) -> IResult<WebIDLInput<&str>, Vec<DictionaryMember>> {
         delimited(
             preceded(parser::multispace_or_comment0, char('{')),
             many0(Self::parse),
@@ -295,9 +277,9 @@ impl DictionaryMember {
 }
 
 impl ExtendedAttribute {
-    pub(crate) fn parse(input: &str) -> IResult<&str, ExtendedAttribute> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, ExtendedAttribute> {
         let (input, identifier) =
-            preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
+            preceded(parser::multispace_or_comment0, parser::idl_identifier)(input)?;
         let (input, value) = opt(alt((
             preceded(
                 tuple((parser::multispace_or_comment0, char('='))),
@@ -311,26 +293,28 @@ impl ExtendedAttribute {
         Ok((input, ExtendedAttribute { identifier, value }))
     }
 
-    pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<ExtendedAttribute>> {
+    pub(crate) fn parse_multi0(
+        input: WebIDLInput<&str>,
+    ) -> IResult<WebIDLInput<&str>, Vec<ExtendedAttribute>> {
         map(
             opt(delimited(
                 tuple((parser::multispace_or_comment0, char('['))),
                 separated_list0(char(','), Self::parse),
                 tuple((parser::multispace_or_comment0, char(']'))),
             )),
-            |o| o.unwrap_or_default(),
+            Option::unwrap_or_default,
         )(input)
     }
 }
 
 impl ExtAttrValue {
-    pub(crate) fn parse(input: &str) -> IResult<&str, ExtAttrValue> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, ExtAttrValue> {
         preceded(
             parser::multispace_or_comment0,
             alt((
                 map(NamedArgumentList::parse, ExtAttrValue::NamedArgumentList),
                 map(
-                    alt((parser::parse_identifier, parser::parse_quoted_string)),
+                    alt((parser::idl_identifier, parser::double_quoted_string)),
                     ExtAttrValue::Identifier,
                 ),
                 map(Self::parse_identifier_list, ExtAttrValue::IdentifierList),
@@ -339,14 +323,14 @@ impl ExtAttrValue {
         )(input)
     }
 
-    fn parse_identifier_list(input: &str) -> IResult<&str, Vec<JsWord>> {
+    fn parse_identifier_list(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Vec<JsWord>> {
         delimited(
             tuple((parser::multispace_or_comment0, char('('))),
             separated_list0(
                 char(','),
                 delimited(
                     parser::multispace_or_comment0,
-                    alt((parser::parse_identifier, parser::parse_quoted_string)),
+                    alt((parser::idl_identifier, parser::double_quoted_string)),
                     parser::multispace_or_comment0,
                 ),
             ),
@@ -356,9 +340,9 @@ impl ExtAttrValue {
 }
 
 impl NamedArgumentList {
-    pub(crate) fn parse(input: &str) -> IResult<&str, NamedArgumentList> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, NamedArgumentList> {
         let (input, identifier) =
-            preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
+            preceded(parser::multispace_or_comment0, parser::idl_identifier)(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
 
         Ok((
@@ -372,13 +356,13 @@ impl NamedArgumentList {
 }
 
 impl Argument {
-    pub(crate) fn parse(input: &str) -> IResult<&str, Argument> {
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Argument> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, optional) = parser::parse_is_some_attribute(input, "optional")?;
+        let (input, optional) = parser::is_optional(input)?;
         let (input, r#type) = Type::parse(input)?;
-        let (input, variadic) = parser::parse_is_some_attribute(input, "...")?;
+        let (input, variadic) = parser::is_variadic(input)?;
         let (input, identifier) =
-            preceded(parser::multispace_or_comment0, parser::parse_identifier)(input)?;
+            preceded(parser::multispace_or_comment0, parser::idl_identifier)(input)?;
         let (input, default) = opt(preceded(
             tuple((parser::multispace_or_comment0, char('='))),
             DefaultValue::parse,
@@ -397,7 +381,9 @@ impl Argument {
         ))
     }
 
-    pub(crate) fn parse_multi0(input: &str) -> IResult<&str, Vec<Argument>> {
+    pub(crate) fn parse_multi0(
+        input: WebIDLInput<&str>,
+    ) -> IResult<WebIDLInput<&str>, Vec<Argument>> {
         delimited(
             tuple((parser::multispace_or_comment0, char('('))),
             separated_list0(char(','), Self::parse),
@@ -407,30 +393,31 @@ impl Argument {
 }
 
 impl DefaultValue {
-    pub(crate) fn parse(input: &str) -> IResult<&str, DefaultValue> {
+    // TODO: There is room for improvements here...
+    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, DefaultValue> {
         preceded(
             parser::multispace_or_comment0,
             alt((
-                map(alt((tag("true"), tag("false"))), |s: &str| {
-                    DefaultValue::Boolean(s.parse::<bool>().unwrap())
+                map(alt((tag("true"), tag("false"))), |s: WebIDLInput<&str>| {
+                    DefaultValue::Boolean(s.input.parse::<bool>().unwrap())
                 }),
                 // Integer in hexadecimal format.
-                map(preceded(tag("0x"), hex_digit1), |s: &str| {
-                    DefaultValue::Integer(i64::from_str_radix(s, 16).unwrap())
+                map(preceded(tag("0x"), hex_digit1), |s: WebIDLInput<&str>| {
+                    DefaultValue::Integer(i64::from_str_radix(s.input, 16).unwrap())
                 }),
                 map(
                     // Make sure there is no "." at the end -> float
-                    map_res(terminated(digit1, not(peek(char('.')))), |s: &str| {
-                        s.parse::<i64>()
-                    }),
+                    map_res(
+                        terminated(digit1, not(peek(char('.')))),
+                        |s: WebIDLInput<&str>| s.input.parse::<i64>(),
+                    ),
                     DefaultValue::Integer,
                 ),
                 // NOTE: Change this? Don't think we need f64 for WebIDL though.
                 map(float, |f| DefaultValue::Decimal(f as f64)),
-                map(
-                    delimited(char('"'), take_until("\""), char('"')),
-                    |s: &str| DefaultValue::String(JsWord::from(s)),
-                ),
+                map(parser::double_quoted_string, |s: JsWord| {
+                    DefaultValue::String(s)
+                }),
                 value(DefaultValue::Null, tag("null")),
                 value(DefaultValue::Infinity, tag("Infinity")),
                 value(DefaultValue::NegativeInfinity, tag("-Infinity")),
