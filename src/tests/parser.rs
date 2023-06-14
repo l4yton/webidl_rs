@@ -1,4 +1,6 @@
-use crate::{parse, tests, Definition, Type};
+use swc_atoms::JsWord;
+
+use crate::{parse, tests, Definition, StandardTypeName, Type};
 
 #[test]
 fn test_interface_simple() {
@@ -123,8 +125,22 @@ fn test_callback_function_simple() {
 
     assert!(cb_function.ext_attrs.is_empty());
     assert!(cb_function.identifier.to_string() == "Foo");
-    assert!(cb_function.r#type == Type::from("Bar"));
     assert!(cb_function.arguments.is_empty());
+
+    let r#type = match cb_function.r#type {
+        Type::Standard(standard) => standard,
+        _ => panic!("Parsed type is not standard."),
+    };
+
+    assert!(r#type.ext_attrs.is_empty());
+    assert!(r#type.nullable == false);
+
+    let name = match r#type.name {
+        StandardTypeName::Identifier(identifier) => identifier,
+        _ => panic!("Parse type name is not an identifier."),
+    };
+
+    assert!(name == JsWord::from("Bar"));
 }
 
 #[test]
@@ -138,6 +154,20 @@ fn test_typedef_simple() {
     };
 
     assert!(typedef.ext_attrs.is_empty());
-    assert!(typedef.r#type == Type::from("Foo"));
     assert!(typedef.identifier.to_string() == "Bar");
+
+    let r#type = match typedef.r#type {
+        Type::Standard(standard) => standard,
+        _ => panic!("Parsed type is not standard."),
+    };
+
+    assert!(r#type.ext_attrs.is_empty());
+    assert!(r#type.nullable == false);
+
+    let name = match r#type.name {
+        StandardTypeName::Identifier(identifier) => identifier,
+        _ => panic!("Parse type name is not an identifier."),
+    };
+
+    assert!(name == JsWord::from("Foo"));
 }

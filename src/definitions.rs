@@ -1,5 +1,3 @@
-use std::hash::{Hash, Hasher};
-
 use swc_atoms::JsWord;
 
 use crate::{Member, Type};
@@ -201,18 +199,3 @@ impl Definition {
 }
 
 /* Trait implementations */
-
-impl PartialEq for Argument {
-    fn eq(&self, other: &Self) -> bool {
-        self.r#type == other.r#type && self.variadic == other.variadic
-    }
-}
-
-impl Eq for Argument {}
-
-impl Hash for Argument {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.r#type.hash(state);
-        self.variadic.hash(state);
-    }
-}
