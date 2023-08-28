@@ -4,7 +4,7 @@ use itertools::join;
 
 use crate::{
     AttrSpecial, Attribute, ConstValue, Constant, Constructor, Iterable, Maplike, Member,
-    OpSpecial, Operation, Setlike, Stringifer,
+    OpSpecial, Operation, Setlike, Stringifier,
 };
 
 impl fmt::Display for Member {
@@ -14,7 +14,7 @@ impl fmt::Display for Member {
             Member::Attribute(attribute) => write!(f, "{}", attribute),
             Member::Operation(operation) => write!(f, "{}", operation),
             Member::Constructor(constructor) => write!(f, "{}", constructor),
-            Member::Stringifer(stringifer) => write!(f, "{}", stringifer),
+            Member::Stringifier(stringifier) => write!(f, "{}", stringifier),
             Member::Iterable(iterable) => write!(f, "{}", iterable),
             Member::Maplike(maplike) => write!(f, "{}", maplike),
             Member::Setlike(setlike) => write!(f, "{}", setlike),
@@ -102,10 +102,10 @@ impl fmt::Display for Operation {
 impl fmt::Display for OpSpecial {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            OpSpecial::Static => write!(f, "static"),
             OpSpecial::Getter => write!(f, "getter"),
             OpSpecial::Setter => write!(f, "setter"),
             OpSpecial::Deleter => write!(f, "deleter"),
+            OpSpecial::Static => write!(f, "static"),
         }
     }
 }
@@ -120,7 +120,7 @@ impl fmt::Display for Constructor {
     }
 }
 
-impl fmt::Display for Stringifer {
+impl fmt::Display for Stringifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.ext_attrs.is_empty() {
             write!(f, "[{}] ", join(&self.ext_attrs, ", "))?;
@@ -142,11 +142,11 @@ impl fmt::Display for Iterable {
 
         write!(f, "iterable<")?;
 
-        if let Some(key_type) = &self.key_type {
+        if let Some(key_type) = &self.key {
             write!(f, "{}, ", key_type)?;
         }
 
-        write!(f, "{}>;", self.value_type)
+        write!(f, "{}>;", self.value)
     }
 }
 
@@ -160,7 +160,7 @@ impl fmt::Display for Maplike {
             write!(f, "readonly ")?;
         }
 
-        write!(f, "maplike<{}, {}>;", self.key_type, self.value_type)
+        write!(f, "maplike<{}, {}>;", self.key, self.value)
     }
 }
 

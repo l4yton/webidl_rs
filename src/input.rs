@@ -5,26 +5,24 @@ use nom::{
     AsBytes, Compare, CompareResult, Err, ExtendInto, FindSubstring, FindToken, IResult, InputIter,
     InputLength, InputTake, InputTakeAtPosition, Needed, Offset, ParseTo, Slice,
 };
-use swc_atoms::JsWord;
 
 #[derive(Debug, Clone)]
-pub struct WebIDLInput<T> {
+pub struct WebIDLInput<'a, T> {
     pub input: T,
-    pub curr_definition: Option<JsWord>,
+
+    /// Keep track of the definition that is currently being parsed.
+    pub definition: Option<&'a str>,
 }
 
-impl<'a> From<&'a str> for WebIDLInput<&'a str> {
+impl<'a> From<&'a str> for WebIDLInput<'a, &'a str> {
     fn from(input: &'a str) -> Self {
-        let curr_definition = None;
+        let definition = None;
 
-        Self {
-            input,
-            curr_definition,
-        }
+        Self { input, definition }
     }
 }
 
-impl<T> AsBytes for WebIDLInput<T>
+impl<'a, T> AsBytes for WebIDLInput<'a, T>
 where
     T: AsBytes,
 {
@@ -33,7 +31,7 @@ where
     }
 }
 
-impl<T, U> Compare<U> for WebIDLInput<T>
+impl<'a, T, U> Compare<U> for WebIDLInput<'a, T>
 where
     T: Compare<U>,
 {
@@ -46,7 +44,7 @@ where
     }
 }
 
-impl<T> ExtendInto for WebIDLInput<T>
+impl<'a, T> ExtendInto for WebIDLInput<'a, T>
 where
     T: ExtendInto,
 {
@@ -62,7 +60,7 @@ where
     }
 }
 
-impl<T, U> FindSubstring<U> for WebIDLInput<T>
+impl<'a, T, U> FindSubstring<U> for WebIDLInput<'a, T>
 where
     T: FindSubstring<U>,
 {
@@ -71,7 +69,7 @@ where
     }
 }
 
-impl<T, U> FindToken<U> for WebIDLInput<T>
+impl<'a, T, U> FindToken<U> for WebIDLInput<'a, T>
 where
     T: FindToken<U>,
 {
@@ -80,7 +78,7 @@ where
     }
 }
 
-impl<T> InputIter for WebIDLInput<T>
+impl<'a, T> InputIter for WebIDLInput<'a, T>
 where
     T: InputIter,
 {
@@ -108,7 +106,7 @@ where
     }
 }
 
-impl<T> InputLength for WebIDLInput<T>
+impl<'a, T> InputLength for WebIDLInput<'a, T>
 where
     T: InputLength,
 {
@@ -117,7 +115,7 @@ where
     }
 }
 
-impl<T> InputTake for WebIDLInput<T>
+impl<'a, T> InputTake for WebIDLInput<'a, T>
 where
     T: InputTake,
     Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -131,7 +129,7 @@ where
     }
 }
 
-impl<T> InputTakeAtPosition for WebIDLInput<T>
+impl<'a, T> InputTakeAtPosition for WebIDLInput<'a, T>
 where
     T: InputTakeAtPosition + InputIter + InputTake + InputLength,
     Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Clone,
@@ -195,7 +193,7 @@ where
     }
 }
 
-impl<T> Offset for WebIDLInput<T>
+impl<'a, T> Offset for WebIDLInput<'a, T>
 where
     T: Offset,
 {
@@ -204,7 +202,7 @@ where
     }
 }
 
-impl<T, R> ParseTo<R> for WebIDLInput<T>
+impl<'a, T, R> ParseTo<R> for WebIDLInput<'a, T>
 where
     T: ParseTo<R>,
 {
@@ -213,17 +211,14 @@ where
     }
 }
 
-impl<T, R> Slice<R> for WebIDLInput<T>
+impl<'a, T, R> Slice<R> for WebIDLInput<'a, T>
 where
     T: Slice<R>,
 {
     fn slice(&self, range: R) -> Self {
         let input = self.input.slice(range);
-        let definition = self.curr_definition.clone();
+        let definition = self.definition;
 
-        Self {
-            input,
-            curr_definition: definition,
-        }
+        Self { input, definition }
     }
 }

@@ -3,16 +3,14 @@ use std::fmt;
 use itertools::{join, Itertools};
 
 use crate::{
-    parser::{idl_identifier_regex, IDL_IDENTIFIER_RE},
-    Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
+    parser, Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
     DictionaryMember, Enumeration, ExtAttrValue, ExtendedAttribute, Includes, Interface,
     InterfaceMixin, NamedArgumentList, Namespace, Typedef,
 };
 
-// TODO: Find a better solution to determine if an identifier has to be in quotes.
 fn display_ext_attr_identifier(identifier: &str) -> String {
-    if IDL_IDENTIFIER_RE
-        .get_or_init(idl_identifier_regex)
+    if parser::IDL_IDENTIFIER_RE
+        .get_or_init(parser::idl_identifier_regex)
         .is_match(identifier)
     {
         return identifier.to_string();

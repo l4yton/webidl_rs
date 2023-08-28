@@ -8,7 +8,7 @@ pub enum Member {
     Attribute(Attribute),
     Operation(Operation),
     Constructor(Constructor),
-    Stringifer(Stringifer),
+    Stringifier(Stringifier),
     Iterable(Iterable),
     Maplike(Maplike),
     Setlike(Setlike),
@@ -60,10 +60,10 @@ pub struct Operation {
 
 #[derive(Debug, Clone)]
 pub enum OpSpecial {
-    Static,
     Getter,
     Setter,
     Deleter,
+    Static,
 }
 
 #[derive(Debug, Clone)]
@@ -74,7 +74,7 @@ pub struct Constructor {
 }
 
 #[derive(Debug, Clone)]
-pub struct Stringifer {
+pub struct Stringifier {
     pub ext_attrs: Vec<ExtendedAttribute>,
 }
 
@@ -82,8 +82,8 @@ pub struct Stringifer {
 pub struct Iterable {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#async: bool,
-    pub key_type: Option<Type>,
-    pub value_type: Type,
+    pub key: Option<Type>,
+    pub value: Type,
     pub arguments: Option<Vec<Argument>>,
 }
 
@@ -91,8 +91,8 @@ pub struct Iterable {
 pub struct Maplike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
-    pub key_type: Type,
-    pub value_type: Type,
+    pub key: Type,
+    pub value: Type,
 }
 
 #[derive(Debug, Clone)]
@@ -105,38 +105,38 @@ pub struct Setlike {
 /* Functionality implementations */
 
 impl Member {
-    pub fn get_identifier(&self) -> Option<&JsWord> {
+    pub fn identifier(&self) -> Option<&JsWord> {
         match self {
-            Member::Constant(constant) => Some(&constant.identifier),
-            Member::Attribute(attribute) => Some(&attribute.identifier),
-            Member::Operation(operation) => Some(&operation.identifier),
+            Self::Constant(constant) => Some(&constant.identifier),
+            Self::Attribute(attribute) => Some(&attribute.identifier),
+            Self::Operation(operation) => Some(&operation.identifier),
             _ => None,
         }
     }
 
-    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
+    pub fn ext_attrs(&self) -> &Vec<ExtendedAttribute> {
         match self {
-            Member::Constant(constant) => &constant.ext_attrs,
-            Member::Attribute(attribute) => &attribute.ext_attrs,
-            Member::Operation(operation) => &operation.ext_attrs,
-            Member::Constructor(constructor) => &constructor.ext_attrs,
-            Member::Stringifer(stringifier) => &stringifier.ext_attrs,
-            Member::Iterable(iterable) => &iterable.ext_attrs,
-            Member::Maplike(maplike) => &maplike.ext_attrs,
-            Member::Setlike(setlike) => &setlike.ext_attrs,
+            Self::Constant(constant) => &constant.ext_attrs,
+            Self::Attribute(attribute) => &attribute.ext_attrs,
+            Self::Operation(operation) => &operation.ext_attrs,
+            Self::Constructor(constructor) => &constructor.ext_attrs,
+            Self::Stringifier(stringifier) => &stringifier.ext_attrs,
+            Self::Iterable(iterable) => &iterable.ext_attrs,
+            Self::Maplike(maplike) => &maplike.ext_attrs,
+            Self::Setlike(setlike) => &setlike.ext_attrs,
         }
     }
 
-    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
+    pub fn ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
         match self {
-            Member::Constant(constant) => &mut constant.ext_attrs,
-            Member::Attribute(attribute) => &mut attribute.ext_attrs,
-            Member::Operation(operation) => &mut operation.ext_attrs,
-            Member::Constructor(constructor) => &mut constructor.ext_attrs,
-            Member::Stringifer(stringifier) => &mut stringifier.ext_attrs,
-            Member::Iterable(iterable) => &mut iterable.ext_attrs,
-            Member::Maplike(maplike) => &mut maplike.ext_attrs,
-            Member::Setlike(setlike) => &mut setlike.ext_attrs,
+            Self::Constant(constant) => &mut constant.ext_attrs,
+            Self::Attribute(attribute) => &mut attribute.ext_attrs,
+            Self::Operation(operation) => &mut operation.ext_attrs,
+            Self::Constructor(constructor) => &mut constructor.ext_attrs,
+            Self::Stringifier(stringifier) => &mut stringifier.ext_attrs,
+            Self::Iterable(iterable) => &mut iterable.ext_attrs,
+            Self::Maplike(maplike) => &mut maplike.ext_attrs,
+            Self::Setlike(setlike) => &mut setlike.ext_attrs,
         }
     }
 }

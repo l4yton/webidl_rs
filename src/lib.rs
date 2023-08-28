@@ -18,7 +18,7 @@ pub fn parse(
 ) -> Result<Vec<Definition>, nom::Err<nom::error::Error<WebIDLInput<&str>>>> {
     let (_, definitions) = nom::combinator::all_consuming(nom::sequence::terminated(
         nom::multi::many0(Definition::parse),
-        parser::multispace_or_comment0,
+        parser::parse_multispace_or_comment0,
     ))(WebIDLInput::from(input))?;
 
     Ok(definitions)

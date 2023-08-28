@@ -145,54 +145,54 @@ pub enum DefaultValue {
 /* Functionality implementations */
 
 impl Definition {
-    pub fn get_identifier(&self) -> Option<&JsWord> {
+    pub fn identifier(&self) -> Option<&JsWord> {
         match self {
-            Definition::Interface(interface) => Some(&interface.identifier),
-            Definition::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
-            Definition::Includes(_) => None,
-            Definition::CallbackInterface(cb_interface) => Some(&cb_interface.identifier),
-            Definition::Namespace(namespace) => Some(&namespace.identifier),
-            Definition::Dictionary(dictionary) => Some(&dictionary.identifier),
-            Definition::Enumeration(r#enum) => Some(&r#enum.identifier),
-            Definition::CallbackFunction(cb_function) => Some(&cb_function.identifier),
-            Definition::Typedef(typedef) => Some(&typedef.identifier),
+            Self::Interface(interface) => Some(&interface.identifier),
+            Self::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
+            Self::Includes(_) => None,
+            Self::CallbackInterface(cb_interface) => Some(&cb_interface.identifier),
+            Self::Namespace(namespace) => Some(&namespace.identifier),
+            Self::Dictionary(dictionary) => Some(&dictionary.identifier),
+            Self::Enumeration(r#enum) => Some(&r#enum.identifier),
+            Self::CallbackFunction(cb_function) => Some(&cb_function.identifier),
+            Self::Typedef(typedef) => Some(&typedef.identifier),
         }
     }
 
-    pub fn get_ext_attrs(&self) -> &Vec<ExtendedAttribute> {
+    pub fn ext_attrs(&self) -> &Vec<ExtendedAttribute> {
         match self {
-            Definition::Interface(interface) => &interface.ext_attrs,
-            Definition::InterfaceMixin(interface_mixin) => &interface_mixin.ext_attrs,
-            Definition::Includes(includes) => &includes.ext_attrs,
-            Definition::CallbackInterface(cb_interface) => &cb_interface.ext_attrs,
-            Definition::Namespace(namespace) => &namespace.ext_attrs,
-            Definition::Dictionary(dictionary) => &dictionary.ext_attrs,
-            Definition::Enumeration(r#enum) => &r#enum.ext_attrs,
-            Definition::CallbackFunction(cb_function) => &cb_function.ext_attrs,
-            Definition::Typedef(typedef) => &typedef.ext_attrs,
+            Self::Interface(interface) => &interface.ext_attrs,
+            Self::InterfaceMixin(interface_mixin) => &interface_mixin.ext_attrs,
+            Self::Includes(includes) => &includes.ext_attrs,
+            Self::CallbackInterface(cb_interface) => &cb_interface.ext_attrs,
+            Self::Namespace(namespace) => &namespace.ext_attrs,
+            Self::Dictionary(dictionary) => &dictionary.ext_attrs,
+            Self::Enumeration(r#enum) => &r#enum.ext_attrs,
+            Self::CallbackFunction(cb_function) => &cb_function.ext_attrs,
+            Self::Typedef(typedef) => &typedef.ext_attrs,
         }
     }
 
-    pub fn get_ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
+    pub fn ext_attrs_mut(&mut self) -> &mut Vec<ExtendedAttribute> {
         match self {
-            Definition::Interface(interface) => &mut interface.ext_attrs,
-            Definition::InterfaceMixin(interface_mixin) => &mut interface_mixin.ext_attrs,
-            Definition::Includes(includes) => &mut includes.ext_attrs,
-            Definition::CallbackInterface(cb_interface) => &mut cb_interface.ext_attrs,
-            Definition::Namespace(namespace) => &mut namespace.ext_attrs,
-            Definition::Dictionary(dictionary) => &mut dictionary.ext_attrs,
-            Definition::Enumeration(r#enum) => &mut r#enum.ext_attrs,
-            Definition::CallbackFunction(cb_function) => &mut cb_function.ext_attrs,
-            Definition::Typedef(typedef) => &mut typedef.ext_attrs,
+            Self::Interface(interface) => &mut interface.ext_attrs,
+            Self::InterfaceMixin(interface_mixin) => &mut interface_mixin.ext_attrs,
+            Self::Includes(includes) => &mut includes.ext_attrs,
+            Self::CallbackInterface(cb_interface) => &mut cb_interface.ext_attrs,
+            Self::Namespace(namespace) => &mut namespace.ext_attrs,
+            Self::Dictionary(dictionary) => &mut dictionary.ext_attrs,
+            Self::Enumeration(r#enum) => &mut r#enum.ext_attrs,
+            Self::CallbackFunction(cb_function) => &mut cb_function.ext_attrs,
+            Self::Typedef(typedef) => &mut typedef.ext_attrs,
         }
     }
 
     pub fn is_partial(&self) -> bool {
         match self {
-            Definition::Interface(interface) => interface.partial,
-            Definition::InterfaceMixin(interface_mixin) => interface_mixin.partial,
-            Definition::Namespace(namespace) => namespace.partial,
-            Definition::Dictionary(dictionary) => dictionary.partial,
+            Self::Interface(interface) => interface.partial,
+            Self::InterfaceMixin(interface_mixin) => interface_mixin.partial,
+            Self::Namespace(namespace) => namespace.partial,
+            Self::Dictionary(dictionary) => dictionary.partial,
             _ => false,
         }
     }

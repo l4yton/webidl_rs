@@ -15,12 +15,11 @@ pub enum Type {
 
 #[derive(Debug, Clone)]
 pub struct SequenceType {
+    pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
     pub nullable: bool,
 }
 
-// AFAIU, only Union and StandardType can have extended attributes.
-// https://webidl.spec.whatwg.org/#idl-annotated-types
 #[derive(Debug, Clone)]
 pub struct UnionType {
     pub ext_attrs: Vec<ExtendedAttribute>,
@@ -30,6 +29,7 @@ pub struct UnionType {
 
 #[derive(Debug, Clone)]
 pub struct RecordType {
+    pub ext_attrs: Vec<ExtendedAttribute>,
     pub key: RecordTypeKey,
     pub value: Box<Type>,
 }
@@ -43,18 +43,21 @@ pub enum RecordTypeKey {
 
 #[derive(Debug, Clone)]
 pub struct PromiseType {
+    pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
     pub nullable: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct FrozenArrayType {
+    pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
     pub nullable: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct ObservableArrayType {
+    pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
     pub nullable: bool,
 }
@@ -127,18 +130,18 @@ impl From<JsWord> for Type {
 
 impl From<&JsWord> for Type {
     fn from(identifier: &JsWord) -> Self {
-        JsWord::from(identifier).into()
+        Type::from(JsWord::from(identifier))
     }
 }
 
 impl From<String> for Type {
     fn from(identifier: String) -> Self {
-        JsWord::from(identifier).into()
+        Type::from(JsWord::from(identifier))
     }
 }
 
 impl From<&str> for Type {
     fn from(identifier: &str) -> Self {
-        JsWord::from(identifier).into()
+        Type::from(JsWord::from(identifier))
     }
 }

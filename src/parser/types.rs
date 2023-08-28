@@ -1,4 +1,4 @@
-use crate::input::WebIDLInput;
+use crate::WebIDLInput;
 
 use nom::{
     branch::alt,
@@ -16,7 +16,9 @@ use crate::{
 };
 
 impl Type {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Type> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Type> {
         alt((
             map(SequenceType::parse, Type::Sequence),
             map(RecordType::parse, Type::Record),
@@ -30,17 +32,21 @@ impl Type {
 }
 
 impl SequenceType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, SequenceType> {
-        let (input, r#type) = parser::type_parameterized(input, "sequence")?;
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, SequenceType> {
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
+        let (input, r#type) = parser::parse_parameterized_type(input, "sequence")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
         Ok((
             input,
             SequenceType {
-                r#type: Box::new(r#type),
+                ext_attrs,
+                r#type,
                 nullable,
             },
         ))
@@ -48,25 +54,29 @@ impl SequenceType {
 }
 
 impl RecordType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, RecordType> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, RecordType> {
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, (key, value)) = delimited(
             tuple((
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 tag("record"),
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 char('<'),
             )),
             separated_pair(
                 RecordTypeKey::parse,
-                tuple((parser::multispace_or_comment0, char(','))),
+                tuple((parser::parse_multispace_or_comment0, char(','))),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, char('>'))),
+            tuple((parser::parse_multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((
             input,
             RecordType {
+                ext_attrs,
                 key,
                 value: Box::new(value),
             },
@@ -75,9 +85,11 @@ impl RecordType {
 }
 
 impl RecordTypeKey {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, RecordTypeKey> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, RecordTypeKey> {
         preceded(
-            parser::multispace_or_comment0,
+            parser::parse_multispace_or_comment0,
             alt((
                 map(tag("DOMString"), |_| RecordTypeKey::DOMString),
                 map(tag("USVString"), |_| RecordTypeKey::USVString),
@@ -88,26 +100,28 @@ impl RecordTypeKey {
 }
 
 impl UnionType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, UnionType> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, UnionType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, types) = delimited(
             tuple((
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 char('('),
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
             )),
             separated_list1(
                 tuple((
-                    parser::multispace_or_comment1,
+                    parser::parse_multispace_or_comment1,
                     tag("or"),
-                    parser::multispace_or_comment1,
+                    parser::parse_multispace_or_comment1,
                 )),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, char(')'))),
+            tuple((parser::parse_multispace_or_comment0, char(')'))),
         )(input)?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -123,17 +137,21 @@ impl UnionType {
 }
 
 impl PromiseType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, PromiseType> {
-        let (input, r#type) = parser::type_parameterized(input, "Promise")?;
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, PromiseType> {
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
+        let (input, r#type) = parser::parse_parameterized_type(input, "Promise")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
         Ok((
             input,
             PromiseType {
-                r#type: Box::new(r#type),
+                ext_attrs,
+                r#type,
                 nullable,
             },
         ))
@@ -141,17 +159,21 @@ impl PromiseType {
 }
 
 impl FrozenArrayType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, FrozenArrayType> {
-        let (input, r#type) = parser::type_parameterized(input, "FrozenArray")?;
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, FrozenArrayType> {
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
+        let (input, r#type) = parser::parse_parameterized_type(input, "FrozenArray")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
         Ok((
             input,
             FrozenArrayType {
-                r#type: Box::new(r#type),
+                ext_attrs,
+                r#type,
                 nullable,
             },
         ))
@@ -159,19 +181,21 @@ impl FrozenArrayType {
 }
 
 impl ObservableArrayType {
-    pub(crate) fn parse(
-        input: WebIDLInput<&str>,
-    ) -> IResult<WebIDLInput<&str>, ObservableArrayType> {
-        let (input, r#type) = parser::type_parameterized(input, "ObservableArray")?;
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, ObservableArrayType> {
+        let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
+        let (input, r#type) = parser::parse_parameterized_type(input, "ObservableArray")?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
         Ok((
             input,
             ObservableArrayType {
-                r#type: Box::new(r#type),
+                ext_attrs,
+                r#type,
                 nullable,
             },
         ))
@@ -179,11 +203,13 @@ impl ObservableArrayType {
 }
 
 impl StandardType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, StandardType> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, StandardType> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, name) = StandardTypeName::parse(input)?;
         let (input, nullable) = map(
-            opt(tuple((parser::multispace_or_comment0, char('?')))),
+            opt(tuple((parser::parse_multispace_or_comment0, char('?')))),
             |o| o.is_some(),
         )(input)?;
 
@@ -199,19 +225,23 @@ impl StandardType {
 }
 
 impl StandardTypeName {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, StandardTypeName> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, StandardTypeName> {
         preceded(
-            parser::multispace_or_comment0,
+            parser::parse_multispace_or_comment0,
             alt((
                 map(PrimitiveType::parse, StandardTypeName::Primitive),
-                map(parser::idl_identifier, StandardTypeName::Identifier),
+                map(parser::parse_ident, StandardTypeName::Identifier),
             )),
         )(input)
     }
 }
 
 impl PrimitiveType {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, PrimitiveType> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, PrimitiveType> {
         terminated(
             alt((
                 value(PrimitiveType::UnsignedShort, tag("unsigned short")),

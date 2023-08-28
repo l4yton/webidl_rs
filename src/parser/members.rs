@@ -1,55 +1,59 @@
-use crate::input::WebIDLInput;
+use crate::WebIDLInput;
 
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, digit1, hex_digit1},
-    combinator::{map, map_res, not, opt, peek, value},
+    character::complete::char,
+    combinator::{map, opt, value},
     multi::many0,
-    number::complete::float,
+    number::complete::double,
     sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
 use crate::{
     parser, Argument, AttrSpecial, Attribute, ConstValue, Constant, Constructor, ExtendedAttribute,
-    Iterable, Maplike, Member, OpSpecial, Operation, Setlike, Stringifer, Type,
+    Iterable, Maplike, Member, OpSpecial, Operation, Setlike, Stringifier, Type,
 };
 
 impl Member {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Member> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Member> {
         terminated(
             alt((
-                map(Constant::parse, Member::Constant),
-                map(Attribute::parse, Member::Attribute),
-                map(Constructor::parse, Member::Constructor),
-                map(Operation::parse, Member::Operation),
-                map(Stringifer::parse, Member::Stringifer),
-                map(Iterable::parse, Member::Iterable),
-                map(Maplike::parse, Member::Maplike),
-                map(Setlike::parse, Member::Setlike),
+                map(Constant::parse, Self::Constant),
+                map(Attribute::parse, Self::Attribute),
+                map(Operation::parse, Self::Operation),
+                map(Constructor::parse, Self::Constructor),
+                map(Stringifier::parse, Self::Stringifier),
+                map(Iterable::parse, Self::Iterable),
+                map(Maplike::parse, Self::Maplike),
+                map(Setlike::parse, Self::Setlike),
             )),
-            tuple((parser::multispace_or_comment0, char(';'))),
+            tuple((parser::parse_multispace_or_comment0, char(';'))),
         )(input)
     }
 
-    pub(crate) fn parse_multi0(
-        input: WebIDLInput<&str>,
-    ) -> IResult<WebIDLInput<&str>, Vec<Member>> {
+    pub(crate) fn parse_multi0<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Vec<Member>> {
         delimited(
-            tuple((parser::multispace_or_comment0, char('{'))),
+            tuple((parser::parse_multispace_or_comment0, char('{'))),
             many0(Self::parse),
-            tuple((parser::multispace_or_comment0, char('}'))),
+            tuple((parser::parse_multispace_or_comment0, char('}'))),
         )(input)
     }
 }
 
 impl Constant {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Constant> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Constant> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, (r#type, identifier)) = parser::member_type_and_identifier(input, "const")?;
+        let (input, (r#type, identifier)) = parser::parse_member_type_and_ident(input, "const")?;
         let (input, value) = preceded(
-            tuple((parser::multispace_or_comment0, char('='))),
+            tuple((parser::parse_multispace_or_comment0, char('='))),
             ConstValue::parse,
         )(input)?;
 
@@ -66,42 +70,33 @@ impl Constant {
 }
 
 impl ConstValue {
-    // TODO: Clean up shared code with DefaultValue::parse
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, ConstValue> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, ConstValue> {
         preceded(
-            parser::multispace_or_comment0,
+            parser::parse_multispace_or_comment0,
             alt((
-                map(alt((tag("true"), tag("false"))), |s: WebIDLInput<&str>| {
-                    ConstValue::Boolean(s.input.parse::<bool>().unwrap())
-                }),
-                // Integer in hexadecimal format.
-                map(preceded(tag("0x"), hex_digit1), |s: WebIDLInput<&str>| {
-                    ConstValue::Integer(i64::from_str_radix(s.input, 16).unwrap())
-                }),
-                map(
-                    // Make sure there is no "." at the end -> float.
-                    map_res(
-                        terminated(digit1, not(peek(char('.')))),
-                        |s: WebIDLInput<&str>| s.input.parse::<i64>(),
-                    ),
-                    ConstValue::Integer,
-                ),
-                // NOTE: Change this? Don't think we need f64 for WebIDL though.
-                map(float, |f| ConstValue::Decimal(f as f64)),
-                value(ConstValue::Infinity, tag("Infinity")),
-                value(ConstValue::NegativeInfinity, tag("-Infinity")),
-                value(ConstValue::NaN, tag("NaN")),
+                map(parser::parse_bool, Self::Boolean),
+                map(parser::parse_hex_number, Self::Integer),
+                map(parser::parse_number, Self::Integer),
+                map(double, Self::Decimal),
+                value(Self::Infinity, tag("Infinity")),
+                value(Self::NegativeInfinity, tag("-Infinity")),
+                value(Self::NaN, tag("NaN")),
             )),
         )(input)
     }
 }
 
 impl Attribute {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Attribute> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Attribute> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, special) = AttrSpecial::parse(input)?;
-        let (input, readonly) = parser::is_readonly(input)?;
-        let (input, (r#type, identifier)) = parser::member_type_and_identifier(input, "attribute")?;
+        let (input, readonly) = parser::parse_is_readonly(input)?;
+        let (input, (r#type, identifier)) =
+            parser::parse_member_type_and_ident(input, "attribute")?;
 
         Ok((
             input,
@@ -117,40 +112,35 @@ impl Attribute {
 }
 
 impl AttrSpecial {
-    pub(crate) fn parse(
-        input: WebIDLInput<&str>,
-    ) -> IResult<WebIDLInput<&str>, Option<AttrSpecial>> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Option<AttrSpecial>> {
         opt(delimited(
-            parser::multispace_or_comment0,
+            parser::parse_multispace_or_comment0,
             alt((
-                value(AttrSpecial::Static, tag("static")),
-                value(AttrSpecial::Stringifier, tag("stringifier")),
-                value(AttrSpecial::Inherit, tag("inherit")),
+                value(Self::Static, tag("static")),
+                value(Self::Stringifier, tag("stringifier")),
+                value(Self::Inherit, tag("inherit")),
             )),
-            parser::multispace_or_comment1,
+            parser::parse_multispace_or_comment1,
         ))(input)
     }
 }
 
 impl Operation {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Operation> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Operation> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, special) = OpSpecial::parse(input)?;
-        // Can't use `parse_member_type()` here since an operation doesn't have a tag and
-        // therefore also no space or comment between tag and type.
-        let (input, r#type) = terminated(
-            Type::parse,
-            // Special operations may have the arguments directly after the type and thus no
-            // space afterwards, for example:
-            // `getter CSSNumericValue(unsigned long index)`
-            if special.is_some() {
-                parser::multispace_or_comment0
-            } else {
-                parser::multispace_or_comment1
-            },
+        let (input, r#type) = Type::parse(input)?;
+        let (input, identifier) = map(
+            opt(preceded(
+                parser::parse_multispace_or_comment1,
+                parser::parse_ident,
+            )),
+            Option::unwrap_or_default,
         )(input)?;
-        let (input, identifier) =
-            map(opt(parser::idl_identifier), Option::unwrap_or_default)(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
 
         Ok((
@@ -167,28 +157,32 @@ impl Operation {
 }
 
 impl OpSpecial {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Option<OpSpecial>> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Option<OpSpecial>> {
         opt(delimited(
-            parser::multispace_or_comment0,
+            parser::parse_multispace_or_comment0,
             alt((
-                value(OpSpecial::Static, tag("static")),
-                value(OpSpecial::Getter, tag("getter")),
-                value(OpSpecial::Setter, tag("setter")),
-                value(OpSpecial::Deleter, tag("deleter")),
+                value(Self::Getter, tag("getter")),
+                value(Self::Setter, tag("setter")),
+                value(Self::Deleter, tag("deleter")),
+                value(Self::Static, tag("static")),
             )),
-            parser::multispace_or_comment1,
+            parser::parse_multispace_or_comment1,
         ))(input)
     }
 }
 
 impl Constructor {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Constructor> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Constructor> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, arguments) = preceded(
-            tuple((parser::multispace_or_comment0, tag("constructor"))),
+            tuple((parser::parse_multispace_or_comment0, tag("constructor"))),
             Argument::parse_multi0,
         )(input)?;
-        let r#type = Type::from(input.curr_definition.as_ref().unwrap());
+        let r#type = Type::from(input.definition.unwrap());
 
         Ok((
             input,
@@ -201,34 +195,38 @@ impl Constructor {
     }
 }
 
-impl Stringifer {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Stringifer> {
+impl Stringifier {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Stringifier> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, _) = tuple((parser::multispace_or_comment0, tag("stringifier")))(input)?;
+        let (input, _) = tuple((parser::parse_multispace_or_comment0, tag("stringifier")))(input)?;
 
-        Ok((input, Stringifer { ext_attrs }))
+        Ok((input, Stringifier { ext_attrs }))
     }
 }
 
 impl Iterable {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Iterable> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Iterable> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, r#async) = parser::is_async(input)?;
+        let (input, r#async) = parser::parse_is_async(input)?;
         let (input, (first_type, second_type)) = delimited(
             tuple((
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 tag("iterable"),
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 char('<'),
             )),
             pair(
                 Type::parse,
                 opt(preceded(
-                    tuple((parser::multispace_or_comment0, char(','))),
+                    tuple((parser::parse_multispace_or_comment0, char(','))),
                     Type::parse,
                 )),
             ),
-            tuple((parser::multispace_or_comment0, char('>'))),
+            tuple((parser::parse_multispace_or_comment0, char('>'))),
         )(input)?;
         let (input, arguments) = opt(Argument::parse_multi0)(input)?;
 
@@ -239,8 +237,8 @@ impl Iterable {
                 Iterable {
                     ext_attrs,
                     r#async,
-                    key_type: Some(first_type),
-                    value_type,
+                    key: Some(first_type),
+                    value: value_type,
                     arguments,
                 },
             ));
@@ -252,8 +250,8 @@ impl Iterable {
             Iterable {
                 ext_attrs,
                 r#async,
-                key_type: None,
-                value_type: first_type,
+                key: None,
+                value: first_type,
                 arguments,
             },
         ))
@@ -261,22 +259,24 @@ impl Iterable {
 }
 
 impl Maplike {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Maplike> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Maplike> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, readonly) = parser::is_readonly(input)?;
+        let (input, readonly) = parser::parse_is_readonly(input)?;
         let (input, (key_type, value_type)) = delimited(
             tuple((
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 tag("maplike"),
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 char('<'),
             )),
             separated_pair(
                 Type::parse,
-                tuple((parser::multispace_or_comment0, char(','))),
+                tuple((parser::parse_multispace_or_comment0, char(','))),
                 Type::parse,
             ),
-            tuple((parser::multispace_or_comment0, char('>'))),
+            tuple((parser::parse_multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((
@@ -284,26 +284,28 @@ impl Maplike {
             Maplike {
                 ext_attrs,
                 readonly,
-                key_type,
-                value_type,
+                key: key_type,
+                value: value_type,
             },
         ))
     }
 }
 
 impl Setlike {
-    pub(crate) fn parse(input: WebIDLInput<&str>) -> IResult<WebIDLInput<&str>, Setlike> {
+    pub(crate) fn parse<'a>(
+        input: WebIDLInput<'a, &'a str>,
+    ) -> IResult<WebIDLInput<'a, &'a str>, Setlike> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
-        let (input, readonly) = parser::is_readonly(input)?;
+        let (input, readonly) = parser::parse_is_readonly(input)?;
         let (input, r#type) = delimited(
             tuple((
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 tag("setlike"),
-                parser::multispace_or_comment0,
+                parser::parse_multispace_or_comment0,
                 char('<'),
             )),
             Type::parse,
-            tuple((parser::multispace_or_comment0, char('>'))),
+            tuple((parser::parse_multispace_or_comment0, char('>'))),
         )(input)?;
 
         Ok((
