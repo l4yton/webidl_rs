@@ -68,7 +68,7 @@ impl RecordType {
             separated_pair(
                 RecordTypeKey::parse,
                 tuple((parser::parse_multispace_or_comment0, char(','))),
-                Type::parse,
+                map(Type::parse, Box::new),
             ),
             tuple((parser::parse_multispace_or_comment0, char('>'))),
         )(input)?;
@@ -78,7 +78,7 @@ impl RecordType {
             RecordType {
                 ext_attrs,
                 key,
-                value: Box::new(value),
+                value,
             },
         ))
     }

@@ -230,21 +230,21 @@ impl Iterable {
         )(input)?;
         let (input, arguments) = opt(Argument::parse_multi0)(input)?;
 
-        // iterable<key_type, value_type>
-        if let Some(value_type) = second_type {
+        // iterable<key, value>
+        if let Some(value) = second_type {
             return Ok((
                 input,
                 Iterable {
                     ext_attrs,
                     r#async,
                     key: Some(first_type),
-                    value: value_type,
+                    value,
                     arguments,
                 },
             ));
         }
 
-        // iterable<value_type>
+        // iterable<value>
         Ok((
             input,
             Iterable {
@@ -264,7 +264,7 @@ impl Maplike {
     ) -> IResult<WebIDLInput<'a, &'a str>, Maplike> {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, readonly) = parser::parse_is_readonly(input)?;
-        let (input, (key_type, value_type)) = delimited(
+        let (input, (key, value)) = delimited(
             tuple((
                 parser::parse_multispace_or_comment0,
                 tag("maplike"),
@@ -284,8 +284,8 @@ impl Maplike {
             Maplike {
                 ext_attrs,
                 readonly,
-                key: key_type,
-                value: value_type,
+                key,
+                value,
             },
         ))
     }
