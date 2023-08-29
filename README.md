@@ -14,16 +14,15 @@ webidl_rs = { git = "https://github.com/l4yton/webidl_rs" }
 use webidl_rs::{Constructor, Definition, Member, Type};
 
 fn main() {
-    let mut definitions =
-        webidl_rs::parse("[Exposed=Window] interface Foo { };").unwrap();
+    let mut definitions = webidl_rs::parse("[Exposed=Window] interface Foo { };").unwrap();
 
     // Add a constructor to the first definition.
     if let Some(Definition::Interface(interface)) = definitions.first_mut() {
         interface.members.push(Member::Constructor(Constructor {
             ext_attrs: vec![],
             arguments: vec![],
-            r#type: Type::from()
-        }))
+            r#type: Type::from(&interface.identifier),
+        }));
     }
 
     // Print the Web IDL with the added constructor.
