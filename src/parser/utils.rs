@@ -175,7 +175,7 @@ macro_rules! parse_is_some_fn {
 parse_is_some_fn!(parse_is_partial, "partial");
 parse_is_some_fn!(parse_is_required, "required");
 parse_is_some_fn!(parse_is_optional, "optional");
-parse_is_some_fn!(parse_is_variadic, "variadic");
+parse_is_some_fn!(parse_is_variadic, "...");
 parse_is_some_fn!(parse_is_readonly, "readonly");
 parse_is_some_fn!(parse_is_async, "async");
 
