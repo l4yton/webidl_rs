@@ -4,7 +4,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
-    combinator::{map, opt, value},
+    combinator::{map, opt, value, verify},
     multi::many0,
     number::complete::double,
     sequence::{delimited, pair, preceded, separated_pair, terminated, tuple},
@@ -134,12 +134,15 @@ impl Operation {
         let (input, ext_attrs) = ExtendedAttribute::parse_multi0(input)?;
         let (input, special) = OpSpecial::parse(input)?;
         let (input, r#type) = Type::parse(input)?;
-        let (input, identifier) = map(
-            opt(preceded(
-                parser::parse_multispace_or_comment1,
-                parser::parse_ident,
-            )),
-            Option::unwrap_or_default,
+        let (input, identifier) = verify(
+            map(
+                opt(preceded(
+                    parser::parse_multispace_or_comment1,
+                    parser::parse_ident,
+                )),
+                Option::unwrap_or_default,
+            ),
+            |s| !s.is_empty() || special.is_some(),
         )(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
 
