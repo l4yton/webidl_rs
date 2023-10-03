@@ -114,7 +114,19 @@ pub enum PrimitiveType {
 
 /* Functionality implementations */
 
-// ...
+impl Type {
+    pub fn is_nullable(&self) -> bool {
+        match self {
+            Self::Sequence(sequence) => sequence.nullable,
+            Self::Record(_record) => false,
+            Self::Promise(promise) => promise.nullable,
+            Self::Union(r#union) => r#union.nullable,
+            Self::FrozenArray(frozen_array) => frozen_array.nullable,
+            Self::ObservableArray(observable_array) => observable_array.nullable,
+            Self::Standard(standard) => standard.nullable,
+        }
+    }
+}
 
 /* Trait implementations */
 
