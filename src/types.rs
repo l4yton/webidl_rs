@@ -110,6 +110,7 @@ pub enum PrimitiveType {
     BigUint64Array,
     Float32Array,
     Float64Array,
+    DataView,
 }
 
 /* Functionality implementations */

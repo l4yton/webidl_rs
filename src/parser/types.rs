@@ -284,6 +284,7 @@ impl PrimitiveType {
                     value(PrimitiveType::BigUint64Array, tag("BigUint64Array")),
                     value(PrimitiveType::Float32Array, tag("Float32Array")),
                     value(PrimitiveType::Float64Array, tag("Float64Array")),
+                    value(PrimitiveType::DataView, tag("DataView")),
                 )),
             )),
             // Make sure there isn't any character following that may be part of the identifier or

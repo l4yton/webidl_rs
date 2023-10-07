@@ -164,6 +164,7 @@ impl fmt::Display for PrimitiveType {
             PrimitiveType::BigUint64Array => write!(f, "BigUint64Array"),
             PrimitiveType::Float32Array => write!(f, "Float32Array"),
             PrimitiveType::Float64Array => write!(f, "Float64Array"),
+            PrimitiveType::DataView => write!(f, "DataView"),
         }
     }
 }
