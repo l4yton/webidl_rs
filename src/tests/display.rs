@@ -1,6 +1,6 @@
 use crate::{
-    tests, CallbackFunction, CallbackInterface, Dictionary, Enumeration, Includes, Interface,
-    InterfaceMixin, Namespace, Type, Typedef,
+    internal::String, tests, CallbackFunction, CallbackInterface, Dictionary, Enumeration,
+    Includes, Interface, InterfaceMixin, Namespace, Type, Typedef,
 };
 
 #[test]
@@ -98,7 +98,7 @@ fn test_callback_function_simple() {
     let cb_function = CallbackFunction {
         ext_attrs: vec![],
         identifier: "Foo".into(),
-        r#type: Type::from("Bar"),
+        r#type: Type::from(String::from("Bar")),
         arguments: vec![],
     };
     let expected = tests::load_test_file("callback_function_simple.idl");
@@ -110,7 +110,7 @@ fn test_callback_function_simple() {
 fn test_typedef_simple() {
     let typedef = Typedef {
         ext_attrs: vec![],
-        r#type: Type::from("Foo"),
+        r#type: Type::from(String::from("Foo")),
         identifier: "Bar".into(),
     };
     let expected = tests::load_test_file("typedef_simple.idl");

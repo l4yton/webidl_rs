@@ -1,6 +1,7 @@
 mod definitions;
 mod display;
 mod input;
+mod internal;
 mod members;
 mod parser;
 mod types;

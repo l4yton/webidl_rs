@@ -1,4 +1,4 @@
-use crate::WebIDLInput;
+use crate::{internal::String, WebIDLInput};
 
 use nom::{
     branch::alt,
@@ -10,7 +10,6 @@ use nom::{
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
-use swc_atoms::JsWord;
 
 use crate::{
     parser, Argument, CallbackFunction, CallbackInterface, DefaultValue, Definition, Dictionary,
@@ -351,7 +350,7 @@ impl ExtAttrValue {
 
     fn parse_identifier_list<'a>(
         input: WebIDLInput<'a, &'a str>,
-    ) -> IResult<WebIDLInput<'a, &'a str>, Vec<JsWord>> {
+    ) -> IResult<WebIDLInput<'a, &'a str>, Vec<String>> {
         delimited(
             tuple((parser::parse_multispace_or_comment0, char('('))),
             separated_list0(

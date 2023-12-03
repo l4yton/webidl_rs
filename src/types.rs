@@ -1,8 +1,10 @@
-use swc_atoms::JsWord;
+use crate::{internal::String, ExtendedAttribute};
 
-use crate::ExtendedAttribute;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Type {
     Sequence(SequenceType),
     Record(RecordType),
@@ -14,6 +16,7 @@ pub enum Type {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct SequenceType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
@@ -21,6 +24,7 @@ pub struct SequenceType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct UnionType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub types: Vec<Type>,
@@ -28,6 +32,7 @@ pub struct UnionType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct RecordType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub key: RecordTypeKey,
@@ -35,6 +40,7 @@ pub struct RecordType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum RecordTypeKey {
     DOMString,
     USVString,
@@ -42,6 +48,7 @@ pub enum RecordTypeKey {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PromiseType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
@@ -49,6 +56,7 @@ pub struct PromiseType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct FrozenArrayType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
@@ -56,6 +64,7 @@ pub struct FrozenArrayType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ObservableArrayType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Box<Type>,
@@ -63,6 +72,7 @@ pub struct ObservableArrayType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct StandardType {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub name: StandardTypeName,
@@ -70,12 +80,14 @@ pub struct StandardType {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum StandardTypeName {
     Primitive(PrimitiveType),
-    Identifier(JsWord),
+    Identifier(String),
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum PrimitiveType {
     Any,
     Undefined,
@@ -129,32 +141,12 @@ impl Type {
     }
 }
 
-/* Trait implementations */
-
-impl From<JsWord> for Type {
-    fn from(identifier: JsWord) -> Self {
+impl From<String> for Type {
+    fn from(identifier: String) -> Self {
         Self::Standard(StandardType {
             ext_attrs: Vec::with_capacity(0),
             name: StandardTypeName::Identifier(identifier),
             nullable: false,
         })
-    }
-}
-
-impl From<&JsWord> for Type {
-    fn from(identifier: &JsWord) -> Self {
-        Type::from(JsWord::from(identifier))
-    }
-}
-
-impl From<String> for Type {
-    fn from(identifier: String) -> Self {
-        Type::from(JsWord::from(identifier))
-    }
-}
-
-impl From<&str> for Type {
-    fn from(identifier: &str) -> Self {
-        Type::from(JsWord::from(identifier))
     }
 }

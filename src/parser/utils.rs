@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use crate::{Type, WebIDLInput};
+use crate::{internal::String, Type, WebIDLInput};
 
 use nom::{
     branch::alt,
@@ -13,7 +13,6 @@ use nom::{
     Err, IResult, Slice,
 };
 use regex::Regex;
-use swc_atoms::JsWord;
 
 pub static IDL_IDENTIFIER_RE: OnceLock<Regex> = OnceLock::new();
 
@@ -37,14 +36,14 @@ pub(crate) fn parse_ident_str<'a>(
 
 pub(crate) fn parse_ident<'a>(
     input: WebIDLInput<'a, &'a str>,
-) -> IResult<WebIDLInput<'a, &'a str>, JsWord> {
-    map(parse_ident_str, JsWord::from)(input)
+) -> IResult<WebIDLInput<'a, &'a str>, String> {
+    map(parse_ident_str, String::from)(input)
 }
 
 pub(crate) fn parse_def_ident<'a>(
     input: WebIDLInput<'a, &'a str>,
     definition_tag: &str,
-) -> IResult<WebIDLInput<'a, &'a str>, JsWord> {
+) -> IResult<WebIDLInput<'a, &'a str>, String> {
     let (mut input, identifier) = preceded(
         tuple((
             parse_multispace_or_comment0,
@@ -55,12 +54,12 @@ pub(crate) fn parse_def_ident<'a>(
     )(input)?;
     input.definition = Some(identifier);
 
-    Ok((input, JsWord::from(identifier)))
+    Ok((input, String::from(identifier)))
 }
 
 pub(crate) fn parse_def_inheritance<'a>(
     input: WebIDLInput<'a, &'a str>,
-) -> IResult<WebIDLInput<'a, &'a str>, Option<JsWord>> {
+) -> IResult<WebIDLInput<'a, &'a str>, Option<String>> {
     opt(preceded(
         tuple((
             parse_multispace_or_comment0,
@@ -74,7 +73,7 @@ pub(crate) fn parse_def_inheritance<'a>(
 pub(crate) fn parse_member_type_and_ident<'a>(
     input: WebIDLInput<'a, &'a str>,
     member_tag: &str,
-) -> IResult<WebIDLInput<'a, &'a str>, (Type, JsWord)> {
+) -> IResult<WebIDLInput<'a, &'a str>, (Type, String)> {
     preceded(
         tuple((
             parse_multispace_or_comment0,
@@ -141,10 +140,10 @@ pub(crate) fn parse_multispace_or_comment1<'a>(
 
 pub(crate) fn parse_double_quoted_string<'a>(
     input: WebIDLInput<'a, &'a str>,
-) -> IResult<WebIDLInput<'a, &'a str>, JsWord> {
+) -> IResult<WebIDLInput<'a, &'a str>, String> {
     map(
         delimited(char('"'), take_until("\""), char('"')),
-        |s: WebIDLInput<_>| JsWord::from(s.input),
+        |s: WebIDLInput<_>| String::from(s.input),
     )(input)
 }
 

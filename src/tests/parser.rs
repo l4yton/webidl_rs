@@ -1,6 +1,4 @@
-use swc_atoms::JsWord;
-
-use crate::{parse, tests, Definition, StandardTypeName, Type};
+use crate::{internal::String, parse, tests, Definition, StandardTypeName, Type};
 
 #[test]
 fn test_interface_simple() {
@@ -140,7 +138,7 @@ fn test_callback_function_simple() {
         _ => panic!("Parse type name is not an identifier."),
     };
 
-    assert!(name == JsWord::from("Bar"));
+    assert!(name == String::from("Bar"));
 }
 
 #[test]
@@ -169,5 +167,5 @@ fn test_typedef_simple() {
         _ => panic!("Parse type name is not an identifier."),
     };
 
-    assert!(name == JsWord::from("Foo"));
+    assert!(name == String::from("Foo"));
 }

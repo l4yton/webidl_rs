@@ -1,5 +1,3 @@
-use crate::WebIDLInput;
-
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -13,6 +11,7 @@ use nom::{
 use crate::{
     parser, ExtendedAttribute, FrozenArrayType, ObservableArrayType, PrimitiveType, PromiseType,
     RecordType, RecordTypeKey, SequenceType, StandardType, StandardTypeName, Type, UnionType,
+    WebIDLInput,
 };
 
 impl Type {

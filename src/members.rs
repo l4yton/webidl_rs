@@ -1,8 +1,10 @@
-use swc_atoms::JsWord;
+use crate::{internal::String, Argument, ExtendedAttribute, Type};
 
-use crate::{Argument, ExtendedAttribute, Type};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Member {
     Constant(Constant),
     Attribute(Attribute),
@@ -15,14 +17,16 @@ pub enum Member {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Constant {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub value: ConstValue,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum ConstValue {
     Boolean(bool),
     Integer(i64),
@@ -34,15 +38,17 @@ pub enum ConstValue {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Attribute {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
     pub special: Option<AttrSpecial>,
     pub r#type: Type,
-    pub identifier: JsWord,
+    pub identifier: String,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum AttrSpecial {
     Static,
     Stringifier,
@@ -50,15 +56,17 @@ pub enum AttrSpecial {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Operation {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub special: Option<OpSpecial>,
     pub r#type: Type,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub arguments: Vec<Argument>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum OpSpecial {
     Getter,
     Setter,
@@ -67,6 +75,7 @@ pub enum OpSpecial {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Constructor {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub arguments: Vec<Argument>,
@@ -74,11 +83,13 @@ pub struct Constructor {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Stringifier {
     pub ext_attrs: Vec<ExtendedAttribute>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Iterable {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#async: bool,
@@ -88,6 +99,7 @@ pub struct Iterable {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Maplike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -96,6 +108,7 @@ pub struct Maplike {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Setlike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -105,7 +118,7 @@ pub struct Setlike {
 /* Functionality implementations */
 
 impl Member {
-    pub fn identifier(&self) -> Option<&JsWord> {
+    pub fn identifier(&self) -> Option<&String> {
         match self {
             Self::Constant(constant) => Some(&constant.identifier),
             Self::Attribute(attribute) => Some(&attribute.identifier),
@@ -140,8 +153,3 @@ impl Member {
         }
     }
 }
-
-/* Trait implementations */
-
-// ...
-// ...

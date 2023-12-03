@@ -1,4 +1,4 @@
-use crate::WebIDLInput;
+use crate::{internal::String, WebIDLInput};
 
 use nom::{
     branch::alt,
@@ -142,7 +142,7 @@ impl Operation {
                 )),
                 Option::unwrap_or_default,
             ),
-            |s| !s.is_empty() || special.is_some(),
+            |s: &String| !s.is_empty() || special.is_some(),
         )(input)?;
         let (input, arguments) = Argument::parse_multi0(input)?;
 
@@ -185,7 +185,7 @@ impl Constructor {
             tuple((parser::parse_multispace_or_comment0, tag("constructor"))),
             Argument::parse_multi0,
         )(input)?;
-        let r#type = Type::from(input.definition.unwrap());
+        let r#type = Type::from(String::from(input.definition.unwrap()));
 
         Ok((
             input,

@@ -1,8 +1,10 @@
-use swc_atoms::JsWord;
+use crate::{internal::String, Member, Type};
 
-use crate::{Member, Type};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum Definition {
     Interface(Interface),
     InterfaceMixin(InterfaceMixin),
@@ -16,122 +18,137 @@ pub enum Definition {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Interface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: JsWord,
-    pub inheritance: Option<JsWord>,
+    pub identifier: String,
+    pub inheritance: Option<String>,
     pub members: Vec<Member>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct InterfaceMixin {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub members: Vec<Member>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Includes {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub interface: JsWord,
-    pub mixin: JsWord,
+    pub interface: String,
+    pub mixin: String,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallbackInterface {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub members: Vec<Member>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Namespace {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub members: Vec<Member>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Dictionary {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
-    pub identifier: JsWord,
-    pub inheritance: Option<JsWord>,
+    pub identifier: String,
+    pub inheritance: Option<String>,
     pub members: Vec<DictionaryMember>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Enumeration {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: JsWord,
-    pub values: Vec<JsWord>,
+    pub identifier: String,
+    pub values: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct CallbackFunction {
     pub ext_attrs: Vec<ExtendedAttribute>,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub r#type: Type,
     pub arguments: Vec<Argument>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Typedef {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
-    pub identifier: JsWord,
+    pub identifier: String,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct DictionaryMember {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub required: bool,
     pub r#type: Type,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub default: Option<DefaultValue>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct ExtendedAttribute {
-    pub identifier: JsWord,
+    pub identifier: String,
     pub value: Option<ExtAttrValue>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum ExtAttrValue {
     ArgumentList(Vec<Argument>),
     NamedArgumentList(NamedArgumentList),
-    Identifier(JsWord),
-    IdentifierList(Vec<JsWord>),
+    Identifier(String),
+    IdentifierList(Vec<String>),
 
     Wildcard,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct NamedArgumentList {
-    pub identifier: JsWord,
+    pub identifier: String,
     pub arguments: Vec<Argument>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Argument {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub optional: bool,
     pub r#type: Type,
     pub variadic: bool,
-    pub identifier: JsWord,
+    pub identifier: String,
     pub default: Option<DefaultValue>,
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum DefaultValue {
     Boolean(bool),
     Integer(i64),
     Decimal(f64),
-    String(JsWord),
+    String(String),
 
     Null,
     Infinity,
@@ -145,7 +162,7 @@ pub enum DefaultValue {
 /* Functionality implementations */
 
 impl Definition {
-    pub fn identifier(&self) -> Option<&JsWord> {
+    pub fn identifier(&self) -> Option<&String> {
         match self {
             Self::Interface(interface) => Some(&interface.identifier),
             Self::InterfaceMixin(interface_mixin) => Some(&interface_mixin.identifier),
