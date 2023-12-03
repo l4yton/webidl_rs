@@ -1,10 +1,10 @@
 use crate::{internal::String, Member, Type};
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serde-derive")]
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum Definition {
     Interface(Interface),
     InterfaceMixin(InterfaceMixin),
@@ -18,7 +18,7 @@ pub enum Definition {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Interface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -28,7 +28,7 @@ pub struct Interface {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct InterfaceMixin {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -37,7 +37,7 @@ pub struct InterfaceMixin {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Includes {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub interface: String,
@@ -45,7 +45,7 @@ pub struct Includes {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct CallbackInterface {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
@@ -53,7 +53,7 @@ pub struct CallbackInterface {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Namespace {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -62,7 +62,7 @@ pub struct Namespace {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Dictionary {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub partial: bool,
@@ -72,7 +72,7 @@ pub struct Dictionary {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Enumeration {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
@@ -80,7 +80,7 @@ pub struct Enumeration {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct CallbackFunction {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub identifier: String,
@@ -89,7 +89,7 @@ pub struct CallbackFunction {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Typedef {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
@@ -97,7 +97,7 @@ pub struct Typedef {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct DictionaryMember {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub required: bool,
@@ -107,14 +107,14 @@ pub struct DictionaryMember {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct ExtendedAttribute {
     pub identifier: String,
     pub value: Option<ExtAttrValue>,
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum ExtAttrValue {
     ArgumentList(Vec<Argument>),
     NamedArgumentList(NamedArgumentList),
@@ -125,14 +125,14 @@ pub enum ExtAttrValue {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct NamedArgumentList {
     pub identifier: String,
     pub arguments: Vec<Argument>,
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Argument {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub optional: bool,
@@ -143,7 +143,7 @@ pub struct Argument {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum DefaultValue {
     Boolean(bool),
     Integer(i64),

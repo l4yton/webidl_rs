@@ -1,10 +1,10 @@
 use crate::{internal::String, Argument, ExtendedAttribute, Type};
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serde-derive")]
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum Member {
     Constant(Constant),
     Attribute(Attribute),
@@ -17,7 +17,7 @@ pub enum Member {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Constant {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#type: Type,
@@ -26,7 +26,7 @@ pub struct Constant {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum ConstValue {
     Boolean(bool),
     Integer(i64),
@@ -38,7 +38,7 @@ pub enum ConstValue {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Attribute {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -48,7 +48,7 @@ pub struct Attribute {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum AttrSpecial {
     Static,
     Stringifier,
@@ -56,7 +56,7 @@ pub enum AttrSpecial {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Operation {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub special: Option<OpSpecial>,
@@ -66,7 +66,7 @@ pub struct Operation {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub enum OpSpecial {
     Getter,
     Setter,
@@ -75,7 +75,7 @@ pub enum OpSpecial {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Constructor {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub arguments: Vec<Argument>,
@@ -83,13 +83,13 @@ pub struct Constructor {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Stringifier {
     pub ext_attrs: Vec<ExtendedAttribute>,
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Iterable {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub r#async: bool,
@@ -99,7 +99,7 @@ pub struct Iterable {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Maplike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
@@ -108,7 +108,7 @@ pub struct Maplike {
 }
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde-derive", derive(Deserialize, Serialize))]
 pub struct Setlike {
     pub ext_attrs: Vec<ExtendedAttribute>,
     pub readonly: bool,
