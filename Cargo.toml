@@ -8,9 +8,8 @@ itertools = "0.12"
 nom = "7.1"
 regex = "1.10"
 
-[dependencies.hstr]
-version = "0.2.7"
-features = ["serde"]
+[dependencies.swc_atoms]
+version = "0.6.5"
 optional = true
 
 [dependencies.serde]
@@ -20,4 +19,4 @@ optional = true
 
 [features]
 serde-derive = ["serde"]
-hstr-atom = ["hstr"]
+swc-atoms = ["swc_atoms"]
