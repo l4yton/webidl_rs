@@ -9,7 +9,8 @@ nom = "7.1"
 regex = "1.10"
 
 [dependencies.swc_atoms]
-version = "0.6.5"
+git = "https://github.com/l4yton/swc"
+branch = "ignore_typescript"
 optional = true
 
 [dependencies.serde]
